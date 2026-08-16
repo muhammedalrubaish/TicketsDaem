@@ -1,0 +1,46 @@
+javascript:(function(){
+    function extractValue(labels) {
+        const elements = document.querySelectorAll('div, span, label, td, th, p');
+        for (let el of elements) {
+            const text = el.innerText.trim();
+            if (labels.some(label => text.includes(label))) {
+                let value = "";
+                if (text.includes(':')) {
+                    value = text.split(':')[1].trim();
+                } else {
+                    let next = el.nextElementSibling;
+                    if (next) value = next.innerText.trim();
+                }
+                if (value && value.length > 1) return value;
+            }
+        }
+        return "";
+    }
+
+    const ticket = extractValue(["رقم التذكرة", "رقم البلاغ"]);
+    const report = extractValue(["نص البلاغ", "تفاصيل البلاغ"]);
+    const phoneMatch = document.body.innerText.match(/(05\d{8}|9665\d{8})/);
+    let phone = phoneMatch ? phoneMatch[0] : "";
+    if (phone.startsWith('05')) phone = '966' + phone.substring(1);
+
+    const empName = prompt("أدخل اسمك (اختياري):", "محمد") || "محمد";
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? "السلام عليكم، صباح الخير" : "السلام عليكم، مساء الخير";
+
+    const message = `*${greeting}، صباح الخير ⛅*
+
+معك ${empName}
+من الدعم الفني - وحدة بلدي
+لديك تذكرة رقم (${ticket})
+
+*ّنص البلاغ:ّ*
+${report}
+
+*كرماً صورة او فيديو للخطأ 👍🏻⏱️*`;
+
+    if (phone) {
+        window.open(`https://wa.me/${phone.replace(/\D/g,'')}?text=${encodeURIComponent(message)}`, '_blank');
+    } else {
+        alert("لم يتم العثور على رقم جوال في الصفحة. يرجى إدخاله يدوياً في الواتساب.");
+    }
+})();

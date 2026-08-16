@@ -1,0 +1,110 @@
+@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&display=swap");
+
+* {
+  font-family: "Cairo", sans-serif !important;
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+:root {
+  --background: #edf2f7;
+  --foreground: #0f172a;
+  --primary: #15803d;
+  --primary-hover: #166534;
+  --secondary: #b45309;
+  --card-bg: #ffffff;
+  --border: #cbd5e1;
+  --success: #16a34a;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --text-muted: #475569;
+}
+
+[data-theme='dark'] {
+  --background: #181d19;
+  --foreground: #f8fafc;
+  --primary: #4C9A2A;
+  --primary-hover: #3e8121;
+  --secondary: #C8A57F;
+  --card-bg: #232a26;
+  --border: #2c3630;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --background: #181d19;
+    --foreground: #f8fafc;
+    --primary: #4C9A2A;
+    --primary-hover: #3e8121;
+    --secondary: #C8A57F;
+    --card-bg: #232a26;
+    --border: #2c3630;
+  }
+}
+
+html,
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: "Cairo", sans-serif;
+  direction: rtl;
+  unicode-bidi: plaintext;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+input, select, textarea, button {
+  font-family: "Cairo", sans-serif;
+  direction: rtl;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Custom Green Cursor */
+* {
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23217346' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='6'></circle><circle cx='12' cy='12' r='2' fill='%23217346'></circle></svg>") 12 12, auto !important;
+}
+
+a, button, select, input, textarea, .clickable {
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23217346' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='6'></circle><circle cx='12' cy='12' r='2' fill='%23217346'></circle></svg>") 12 12, pointer !important;
+}
+
+/* ===== macOS-style Global Spring Animations ===== */
+@keyframes macPopoverSpring {
+  0% {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes macModalSpring {
+  0% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes macOverlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

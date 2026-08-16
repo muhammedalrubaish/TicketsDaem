@@ -1,0 +1,48 @@
+{
+  "manifest_version": 3,
+  "name": "Daem Plus",
+  "version": "2.2",
+  "description": "إضافة لتلوين البلاغات في منصة داعم بناءً على الحالة والوقت والمزامنة.",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "https://tickets-daem.vercel.app/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://daem.momah.gov.sa/*",
+        "*://daem.momra.gov.sa/*",
+        "*://daem.momrauh.gov.sa/*"
+      ],
+      "js": ["content.js"],
+      "css": ["highlighter.css"],
+      "all_frames": true
+    },
+    {
+      "matches": [
+        "*://daem.momah.gov.sa/*",
+        "*://daem.momra.gov.sa/*",
+        "*://daem.momrauh.gov.sa/*"
+      ],
+      "js": ["main-world-helper.js"],
+      "all_frames": true,
+      "world": "MAIN"
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  }
+}

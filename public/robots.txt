@@ -1,0 +1,3 @@
+# منع جميع محركات البحث (Google, Bing, Yahoo, Yandex, وغيرها) من أرشفة أو فهرسة الموقع بالكامل
+User-agent: *
+Disallow: /

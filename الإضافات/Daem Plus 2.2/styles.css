@@ -1,0 +1,86 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+
+/* تصميم مُنظم واحترافي v9 */
+
+body {
+    width: 350px; /* عرض كافٍ لمنع التداخل */
+    background: #0f172a;
+    color: #f8fafc;
+    font-family: 'Cairo', sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.popup-container {
+    padding: 20px;
+    background: #0f172a;
+}
+
+h3 {
+    margin: 0 0 20px 0;
+    font-size: 18px;
+    color: #38bdf8;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 12px;
+    text-align: center;
+}
+
+.stats-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.label-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.count {
+    font-weight: 700;
+    font-size: 16px;
+    color: #38bdf8;
+}
+
+/* ألوان الفئات */
+.dot-new { background: #4ade80; box-shadow: 0 0 8px #4ade80; }
+.dot-recent { background: #38bdf8; box-shadow: 0 0 8px #38bdf8; }
+.dot-old { background: #fbbf24; box-shadow: 0 0 8px #fbbf24; }
+.dot-very-old { background: #f87171; box-shadow: 0 0 8px #f87171; }
+.dot-unassigned { background: #94a3b8; box-shadow: 0 0 8px #94a3b8; }
+
+/* أنماط تلوين الصفوف في منصة داعم */
+.daem-row-new td { background-color: rgba(74, 222, 128, 0.15) !important; border-right: 8px solid #4ade80 !important; }
+.daem-row-recent td { background-color: rgba(56, 189, 248, 0.15) !important; border-right: 8px solid #38bdf8 !important; }
+.daem-row-old td { background-color: rgba(251, 191, 36, 0.15) !important; border-right: 8px solid #fbbf24 !important; }
+.daem-row-very-old td { background-color: rgba(248, 113, 113, 0.15) !important; border-right: 8px solid #f87171 !important; }
+.daem-row-unassigned td { background-color: rgba(148, 163, 184, 0.1) !important; border-right: 8px solid #94a3b8 !important; }
+
+.daem-row-new td, .daem-row-recent td, .daem-row-old td, .daem-row-very-old td, .daem-row-unassigned td {
+    /* تمت إزالة اللون والسمك للحفاظ على شكل الأرقام الأصلي */
+}
+
+.footer {
+    margin-top: 20px;
+    font-size: 11px;
+    text-align: center;
+    opacity: 0.4;
+}

@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  # ===============================================
+  # 1. تطبيق وحدة بلدي (Next.js App)
+  # ===============================================
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: balady-app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:BaladyAdmin2026Secure!@db:5432/balady_db
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+    depends_on:
+      - db
+    networks:
+      - balady-network
+
+  # ===============================================
+  # 2. قاعدة بيانات PostgreSQL المحلية
+  # ===============================================
+  db:
+    image: postgres:16-alpine
+    container_name: balady-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: BaladyAdmin2026Secure!
+      POSTGRES_DB: balady_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./نسخ_احتياطية_وأرشيف/supabase_backup_2026-08-16/import_to_postgres.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - balady-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  balady-network:
+    driver: bridge

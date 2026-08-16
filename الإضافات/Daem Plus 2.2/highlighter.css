@@ -1,0 +1,141 @@
+/* أنماط تلوين خلية "رقم التذكرة" v19 */
+
+/* إخفاء نص قارئ الشاشة "قابل للفرز" من عناوين الأعمدة */
+.audible-text { display: none !important; }
+
+.daem-cell-new { background-color: rgba(59, 130, 246, 0.15) !important; border-right: 5px solid #3b82f6 !important; }
+.daem-cell-recent { background-color: rgba(236, 72, 153, 0.15) !important; border-right: 5px solid #ec4899 !important; }
+.daem-cell-very-old { background-color: rgba(251, 191, 36, 0.15) !important; border-right: 5px solid #fbbf24 !important; }
+.daem-cell-old { background-color: rgba(6, 182, 212, 0.15) !important; border-right: 5px solid #06b6d4 !important; }
+.daem-cell-not-solved { background-color: rgba(239, 68, 68, 0.15) !important; border-right: 5px solid #ef4444 !important; }
+.daem-cell-unassigned { background-image: linear-gradient(to left, rgba(239, 68, 68, 0.2), rgba(153, 27, 27, 0.05)) !important; border-right: 5px solid #991b1b !important; }
+.daem-cell-mismatch { background-color: rgba(245, 158, 11, 0.15) !important; border-right: 5px solid #f59e0b !important; }
+.daem-cell-solved { background-color: rgba(16, 185, 129, 0.15) !important; border-right: 5px solid #10b981 !important; }
+
+/* تنسيق النص داخل الخلية الملونة - تمت إزالة التعديلات على الخط للحفاظ على الشكل الأصلي */
+td.daem-cell-new, td.daem-cell-recent, td.daem-cell-old, td.daem-cell-very-old, td.daem-cell-not-solved, td.daem-cell-unassigned {
+    /* تم حذف font-weight و text-align للحفاظ على التنسيق الأصلي للمنصة */
+}
+
+/* ضمان بقاء الرابط بلونه الأصلي وشكله الطبيعي */
+td.daem-cell-new a, td.daem-cell-recent a, td.daem-cell-old a, td.daem-cell-very-old a, td.daem-cell-not-solved a, td.daem-cell-unassigned a {
+    /* تم حذف color و text-decoration لكي لا يتغير شكل الأرقام */
+}
+
+/* وقت الفتح - التنسيق النسبي */
+.daem-time-normal {
+    font-weight: 600 !important;
+}
+.daem-time-week {
+    color: #f97316 !important; /* البرتقالي */
+    font-weight: bold !important;
+}
+.daem-time-month {
+    color: #ef4444 !important; /* الأحمر */
+    font-weight: bold !important;
+    background-color: rgba(239, 68, 68, 0.1) !important;
+    border-radius: 4px;
+    padding: 2px 6px;
+}
+
+/* --- Guided Tour Styles --- */
+.daem-tour-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 10000000;
+    pointer-events: auto;
+    transition: all 0.3s ease;
+}
+.daem-tour-highlighted {
+    z-index: 10000001 !important;
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0.4), 0 0 25px rgba(16, 185, 129, 0.6) !important;
+    outline: 2px solid #10b981 !important;
+    border-radius: 4px;
+    background-color: rgba(30, 41, 59, 0.9) !important;
+    transition: all 0.3s ease;
+}
+.daem-tour-lifted-z {
+    z-index: 10000001 !important;
+}
+.daem-tour-tooltip {
+    position: fixed;
+    z-index: 10000002;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(16, 185, 129, 0.5);
+    border-radius: 16px;
+    padding: 16px;
+    width: 320px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+    font-family: 'Cairo', Arial, sans-serif;
+    color: #f8fafc;
+    direction: rtl;
+    text-align: right;
+    transition: all 0.3s ease;
+    animation: daem-fade-in 0.3s ease;
+}
+.daem-tour-tooltip::after {
+    content: '';
+    position: absolute;
+    border-width: 8px;
+    border-style: solid;
+}
+.daem-tour-tooltip.top::after {
+    bottom: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-color: rgba(15, 23, 42, 0.95) transparent transparent transparent;
+}
+.daem-tour-tooltip.bottom::after {
+    top: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-color: transparent transparent rgba(15, 23, 42, 0.95) transparent;
+}
+.daem-tour-tooltip.left::after {
+    right: -16px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-color: transparent transparent transparent rgba(15, 23, 42, 0.95);
+}
+.daem-tour-tooltip.right::after {
+    left: -16px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-color: transparent rgba(15, 23, 42, 0.95) transparent transparent;
+}
+@keyframes daem-fade-in {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+#daem-btn-start-tour {
+    transition: all 0.2s ease !important;
+}
+#daem-btn-start-tour:hover {
+    background-color: rgba(16, 185, 129, 0.25) !important;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.2) !important;
+}
+
+/* تنسيقات أزرار الفلترة السريعة */
+.daem-filter-btn {
+    transition: all 0.2s ease-in-out !important;
+}
+.daem-filter-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+    filter: brightness(1.1);
+}
+.daem-filter-btn.active {
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.4) !important;
+    border-color: #10b981 !important;
+    background-color: rgba(16, 185, 129, 0.2) !important;
+}
+
+
