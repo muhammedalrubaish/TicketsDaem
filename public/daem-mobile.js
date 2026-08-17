@@ -563,6 +563,26 @@
     log('⚠️ لا يوجد رمز دخول — أعد تركيب الأداة من صفحة الإعداد بالموقع.', '#dc2626');
   }
 
+  // ── تمييز الموظفين في إجازة داخل القائمة ──────────────────────────────
+  var employeesOnLeave = [];
+  apiRequest('/api/leaves', { method: 'GET' })
+    .then(function (r) {
+      if (!r.ok || !r.json || !r.json.success) return;
+      employeesOnLeave = r.json.onLeave || [];
+      if (employeesOnLeave.length === 0) return;
+
+      var sel = $('bt-emp');
+      for (var i = 0; i < sel.options.length; i++) {
+        var opt = sel.options[i];
+        var emp = EMPLOYEES.filter(function (e) { return e.username === opt.value; })[0];
+        if (emp && employeesOnLeave.indexOf(emp.name) > -1) {
+          opt.textContent = emp.name + ' 🏖️ (في إجازة)';
+        }
+      }
+      log('🏖️ في إجازة حالياً: ' + employeesOnLeave.join('، '), '#d97706');
+    })
+    .catch(function () { /* تعذر جلب الإجازات — لا يمنع عمل الأداة */ });
+
   $('bt-close').onclick = function () {
     panel.parentNode.removeChild(panel);
     window.__baladyTransferPanelOpen = false;
@@ -605,6 +625,10 @@
     selected = emp;
     // التصنيف المعتمد من القائمة (يسمح بتصحيح الاكتشاف التلقائي يدوياً)
     category = $('bt-cat').value || category;
+
+    if (employeesOnLeave.indexOf(emp.name) > -1) {
+      log('🏖️ تنبيه: ' + emp.name + ' مسجَّل في إجازة — جارٍ التحويل كما طلبت.', '#d97706');
+    }
 
     // ١) تعبئة حقل المعين له داخل صفحة داعم
     var field = assigneeField || findAssigneeInput();

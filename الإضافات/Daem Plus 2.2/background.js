@@ -85,10 +85,28 @@ async function correctSpelling(text) {
     }
 }
 
+// جلب الموظفين في إجازة سارية ليتخطاهم التوزيع بالدور
+async function fetchLeaves() {
+    try {
+        const response = await fetch("https://tickets-daem.vercel.app/api/leaves");
+        if (response.ok) {
+            const data = await response.json();
+            return data && data.success ? (data.onLeave || []) : [];
+        }
+    } catch (error) {
+        console.error("Error fetching leaves in background:", error);
+    }
+    return [];
+}
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "FETCH_TICKETS") {
         fetchTickets().then(data => sendResponse({ tickets: data }));
         return true; // إخبار المتصفح بأن الاستجابة غير متزامنة
+    }
+    if (request.action === "FETCH_LEAVES") {
+        fetchLeaves().then(list => sendResponse({ onLeave: list }));
+        return true;
     }
     if (request.action === "CREATE_TICKET") {
         createTicket(request.data).then(res => sendResponse(res));

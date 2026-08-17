@@ -1925,6 +1925,19 @@ function normalizeCategory(rawCategory) {
 }
 
 // حساب الموظف الذي عليه الدور حسب نفس خوارزمية التوزيع باللوحة الرئيسية
+// أسماء الموظفين في إجازة سارية — تُجلب من الموقع ويتخطاهم التوزيع بالدور
+let employeesOnLeave = [];
+
+function refreshLeaves() {
+  safeSendMessage({ action: "FETCH_LEAVES" }, (response) => {
+    if (response && Array.isArray(response.onLeave)) {
+      employeesOnLeave = response.onLeave;
+    }
+  });
+}
+refreshLeaves();
+setInterval(refreshLeaves, 5 * 60 * 1000);
+
 function getLeastReceiver() {
   if (!window.daemTicketsFetched) {
     return null;
@@ -1966,10 +1979,14 @@ function getLeastReceiver() {
     }
   });
 
-  let bestCandidate = priorityOrder[0];
+  // استثناء الموظفين في إجازة سارية من الدور
+  const available = priorityOrder.filter(emp => !employeesOnLeave.includes(emp.name));
+  const pool = available.length > 0 ? available : priorityOrder;
+
+  let bestCandidate = pool[0];
   let minCount = counts[bestCandidate.name];
 
-  for (const emp of priorityOrder) {
+  for (const emp of pool) {
     if (counts[emp.name] < minCount) {
       minCount = counts[emp.name];
       bestCandidate = emp;

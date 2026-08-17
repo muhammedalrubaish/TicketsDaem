@@ -1263,6 +1263,103 @@ export default function DashboardClient({ complaints: initialComplaints }: Props
       console.warn('Supabase update skipped, saved locally in localStorage.');
     }
   };
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // نظام إجازات الموظفين
+  // ═══════════════════════════════════════════════════════════════════════
+  // عند تسجيل إجازة يتوقف نظام التوزيع بالدور عن اختيار الموظف، ويضيف له
+  // النظام تلقائياً بلاغات باسم «إجازة» ليبقى عدده مساوياً لأعلى زميل حاضر،
+  // فلا ينهال عليه سيل البلاغات عند رجوعه.
+  const [leavesOnLeave, setLeavesOnLeave] = useState<string[]>([]);
+  const [leaveCounts, setLeaveCounts] = useState<{[key: string]: number}>({});
+  const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
+  const [leaveEmpName, setLeaveEmpName] = useState('');
+  const [leaveStartDate, setLeaveStartDate] = useState('');
+  const [leaveEndDate, setLeaveEndDate] = useState('');
+  const [isLeaveBusy, setIsLeaveBusy] = useState(false);
+
+  const loadLeavesStatus = async () => {
+    try {
+      const res = await fetch('/api/leaves', { cache: 'no-store' });
+      const json = await res.json();
+      if (json.success) {
+        setLeavesOnLeave(json.onLeave || []);
+        setLeaveCounts(json.counts || {});
+      }
+    } catch (e) {
+      console.warn('تعذر جلب حالة الإجازات:', e);
+    }
+  };
+
+  useEffect(() => { loadLeavesStatus(); }, []);
+
+  const submitLeave = async () => {
+    if (!leaveEmpName) return;
+    setIsLeaveBusy(true);
+    try {
+      const res = await fetch('/api/leaves', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          actor: loggedInUser || 'المشرف',
+          employeeName: leaveEmpName,
+          startDate: leaveStartDate || undefined,
+          endDate: leaveEndDate || null,
+        }),
+      });
+      const json = await res.json();
+      setNewTicketToast(json.success ? `🏖️ ${json.message}` : `⚠️ ${json.error}`);
+      if (json.success) {
+        setIsLeaveModalOpen(false);
+        setLeaveEndDate('');
+        await loadLeavesStatus();
+      }
+    } catch {
+      setNewTicketToast('⚠️ تعذر الاتصال بالخادم');
+    } finally {
+      setIsLeaveBusy(false);
+      setTimeout(() => setNewTicketToast(null), 6000);
+    }
+  };
+
+  const finishLeave = async (empName: string) => {
+    if (!confirm(`تأكيد رجوع "${empName}" من الإجازة؟ ستتم معادلة أخيرة لعدد بلاغاته قبل الإنهاء.`)) return;
+    setIsLeaveBusy(true);
+    try {
+      const res = await fetch('/api/leaves/end', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ actor: loggedInUser || 'المشرف', employeeName: empName }),
+      });
+      const json = await res.json();
+      setNewTicketToast(json.success ? `↩️ ${json.message}` : `⚠️ ${json.error}`);
+      if (json.success) await loadLeavesStatus();
+    } catch {
+      setNewTicketToast('⚠️ تعذر الاتصال بالخادم');
+    } finally {
+      setIsLeaveBusy(false);
+      setTimeout(() => setNewTicketToast(null), 6000);
+    }
+  };
+
+  const runLeaveBalance = async () => {
+    setIsLeaveBusy(true);
+    try {
+      const res = await fetch('/api/leaves/balance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ actor: loggedInUser || 'المشرف' }),
+      });
+      const json = await res.json();
+      setNewTicketToast(json.success ? `⚖️ ${json.message}` : `⚠️ ${json.error}`);
+      if (json.success) await loadLeavesStatus();
+    } catch {
+      setNewTicketToast('⚠️ تعذر الاتصال بالخادم');
+    } finally {
+      setIsLeaveBusy(false);
+      setTimeout(() => setNewTicketToast(null), 6000);
+    }
+  };
   // نظام التعاميم الإدارية الديناميكي
   const [circulars, setCirculars] = useState<{id:string, title:string, number:string, description:string, file:string, date:string, color:string}[]>([]);
   const [isAddCircularOpen, setIsAddCircularOpen] = useState(false);
@@ -2218,11 +2315,15 @@ export default function DashboardClient({ complaints: initialComplaints }: Props
           }
         });
 
+        // استثناء الموظفين في إجازة سارية من الدور
+        const available = priorityOrder.filter(name => !leavesOnLeave.includes(name));
+        const pool = available.length > 0 ? available : priorityOrder;
+
         // البحث عن الموظف الأنسب بناءً على (أقل عدد بلاغات) ثم (الأولوية في القائمة)
-        let bestCandidate = priorityOrder[0];
+        let bestCandidate = pool[0];
         let minCount = counts[bestCandidate];
 
-        for (const name of priorityOrder) {
+        for (const name of pool) {
           if (counts[name] < minCount) {
             minCount = counts[name];
             bestCandidate = name;
@@ -2233,7 +2334,7 @@ export default function DashboardClient({ complaints: initialComplaints }: Props
         return { name: bestCandidate, count: minCount };
       })()
     };
-  }, [baseComplaints, selectedReceiver]);
+  }, [baseComplaints, selectedReceiver, leavesOnLeave]);
 
   const filteredComplaints = useMemo(() => {
     let result = baseComplaints;
@@ -3940,13 +4041,30 @@ export default function DashboardClient({ complaints: initialComplaints }: Props
                   <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     👥 قائمة الموظفين وإعدادات الصلاحيات
                   </h3>
-                  <button 
-                    onClick={() => setIsAddEmployeeOpen(true)}
-                    style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '8px 18px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.3s' }}
-                  >
-                    ➕ إضافة موظف جديد
-                  </button>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {/* معادلة الإجازات يدوياً لسد أي فرق متراكم */}
+                    <button
+                      onClick={runLeaveBalance}
+                      disabled={isLeaveBusy}
+                      title="مساواة عدد بلاغات الموظفين في إجازة بأعلى زميل حاضر"
+                      style={{ background: 'rgba(148, 163, 184, 0.15)', color: '#cbd5e1', border: '1px solid rgba(148,163,184,0.3)', padding: '8px 14px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 'bold', cursor: isLeaveBusy ? 'wait' : 'pointer' }}
+                    >
+                      ⚖️ معادلة الإجازات
+                    </button>
+                    <button
+                      onClick={() => setIsAddEmployeeOpen(true)}
+                      style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '8px 18px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.3s' }}
+                    >
+                      ➕ إضافة موظف جديد
+                    </button>
+                  </div>
                 </div>
+
+                {leavesOnLeave.length > 0 && (
+                  <div style={{ background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: '10px', padding: '10px 14px', marginBottom: '1rem', fontSize: '0.85rem', color: '#fcd34d', fontWeight: 'bold' }}>
+                    🏖️ في إجازة حالياً: {leavesOnLeave.join('، ')} — يتخطاهم التوزيع بالدور، ويضيف النظام لهم بلاغات «إجازة» تلقائياً ليبقوا متوازين مع الزملاء.
+                  </div>
+                )}
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {employeesList.map((emp) => {
@@ -3963,9 +4081,42 @@ export default function DashboardClient({ complaints: initialComplaints }: Props
                             {emp.name.includes('محمد الربيش') && (
                               <span style={{ fontSize: '0.75rem', color: '#10b981', marginRight: '5px', fontWeight: 'bold', background: 'rgba(16, 185, 129, 0.15)', padding: '2px 8px', borderRadius: '15px' }}>المشرف العام 🛡️</span>
                             )}
+                            {leavesOnLeave.includes(emp.name) && (
+                              <span style={{ fontSize: '0.75rem', color: '#f59e0b', marginRight: '5px', fontWeight: 'bold', background: 'rgba(245, 158, 11, 0.15)', padding: '2px 8px', borderRadius: '15px' }}>في إجازة 🏖️</span>
+                            )}
+                            {leaveCounts[emp.name] !== undefined && (
+                              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginRight: '5px', background: 'rgba(255,255,255,0.05)', padding: '2px 8px', borderRadius: '15px' }}>{leaveCounts[emp.name]} بلاغ</span>
+                            )}
                           </div>
-                          
+
                           <div style={{ display: 'flex', gap: '8px' }}>
+                            {/* إدارة الإجازة — متاحة لمن يملك صلاحية إدارة الموظفين */}
+                            {(currentUserPermissions?.addEmployee || userRole === 'super_admin') && (
+                              leavesOnLeave.includes(emp.name) ? (
+                                <button
+                                  onClick={() => finishLeave(emp.name)}
+                                  disabled={isLeaveBusy}
+                                  title="إنهاء الإجازة مع معادلة أخيرة"
+                                  style={{ background: 'rgba(16, 185, 129, 0.12)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.25)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', cursor: isLeaveBusy ? 'wait' : 'pointer', fontWeight: 'bold' }}
+                                >
+                                  ↩️ رجع من الإجازة
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => {
+                                    setLeaveEmpName(emp.name);
+                                    setLeaveStartDate(new Date().toISOString().split('T')[0]);
+                                    setLeaveEndDate('');
+                                    setIsLeaveModalOpen(true);
+                                  }}
+                                  disabled={isLeaveBusy}
+                                  title="تسجيل إجازة لهذا الموظف"
+                                  style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.2)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', cursor: isLeaveBusy ? 'wait' : 'pointer', fontWeight: 'bold' }}
+                                >
+                                  🏖️ تسجيل إجازة
+                                </button>
+                              )
+                            )}
                             <button 
                               onClick={() => {
                                 setSelectedEmployeeForPerms(isSelected ? null : emp.name);
@@ -4214,6 +4365,55 @@ export default function DashboardClient({ complaints: initialComplaints }: Props
                 </button>
               </div>
 
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================== */}
+      {/* نافذة تسجيل إجازة موظف */}
+      {/* ========================================== */}
+      {isLeaveModalOpen && (
+        <div className={styles.modalOverlay} onClick={() => setIsLeaveModalOpen(false)} style={{ zIndex: 11000 }}>
+          <div className={styles.modalContent} style={{ maxWidth: '450px', background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', direction: 'rtl', fontFamily: 'Cairo' }} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader} style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.8rem' }}>
+              <h3 style={{ margin: 0, color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>🏖️ تسجيل إجازة</h3>
+              <button onClick={() => setIsLeaveModalOpen(false)} style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '1.2rem', cursor: 'pointer' }}>&times;</button>
+            </div>
+
+            <div style={{ padding: '1rem 0' }}>
+              <p style={{ color: '#e2e8f0', fontSize: '0.95rem', margin: '0 0 1rem' }}>
+                الموظف: <strong style={{ color: '#f59e0b' }}>{leaveEmpName}</strong>
+              </p>
+
+              <label style={{ display: 'block', color: '#cbd5e1', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '6px' }}>تاريخ بداية الإجازة</label>
+              <input
+                type="date"
+                value={leaveStartDate}
+                onChange={(e) => setLeaveStartDate(e.target.value)}
+                style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(0,0,0,0.25)', color: 'white', marginBottom: '1rem', fontFamily: 'Cairo' }}
+              />
+
+              <label style={{ display: 'block', color: '#cbd5e1', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '6px' }}>تاريخ نهاية الإجازة (اتركه فارغاً لإجازة مفتوحة)</label>
+              <input
+                type="date"
+                value={leaveEndDate}
+                onChange={(e) => setLeaveEndDate(e.target.value)}
+                style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(0,0,0,0.25)', color: 'white', marginBottom: '1rem', fontFamily: 'Cairo' }}
+              />
+
+              <div style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.25)', borderRadius: '10px', padding: '10px 12px', fontSize: '0.8rem', color: '#93c5fd', lineHeight: 1.9, marginBottom: '1rem' }}>
+                ℹ️ عند التسجيل سيتوقف التوزيع بالدور عن اختياره، وسيضيف النظام له بلاغات باسم «إجازة» ليتساوى عدده مع أعلى زميل حاضر — فلا ينهال عليه سيل البلاغات عند رجوعه.
+                {leaveEndDate ? ' وستنتهي الإجازة تلقائياً بعد تاريخ النهاية.' : ' والإجازة مفتوحة تُنهى يدوياً بزر «رجع من الإجازة».'}
+              </div>
+
+              <button
+                onClick={submitLeave}
+                disabled={isLeaveBusy || !leaveStartDate}
+                style={{ width: '100%', background: '#f59e0b', color: '#1e293b', border: 'none', padding: '12px', borderRadius: '10px', fontSize: '0.95rem', fontWeight: 'bold', cursor: isLeaveBusy ? 'wait' : 'pointer', fontFamily: 'Cairo' }}
+              >
+                {isLeaveBusy ? '⏳ جاري التسجيل...' : '🏖️ تسجيل الإجازة والمعادلة'}
+              </button>
             </div>
           </div>
         </div>

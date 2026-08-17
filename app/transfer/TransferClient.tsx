@@ -67,6 +67,7 @@ export default function TransferClient() {
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [lastTransfer, setLastTransfer] = useState<Record<string, string> | null>(null);
   const [history, setHistory] = useState<any[]>([]);
+  const [onLeave, setOnLeave] = useState<string[]>([]);
 
   // ── تحميل الجلسة والإعدادات ──────────────────────────────────────────
   useEffect(() => {
@@ -93,9 +94,21 @@ export default function TransferClient() {
     } catch { /* أخطاء الشبكة المؤقتة لا تُعرض */ }
   }, []);
 
+  // ── جلب الموظفين في إجازة ────────────────────────────────────────────
+  const loadLeaves = useCallback(async () => {
+    try {
+      const res = await fetch('/api/leaves', { cache: 'no-store' });
+      const json = await res.json();
+      if (json.success) setOnLeave(json.onLeave || []);
+    } catch { /* أخطاء الشبكة المؤقتة لا تُعرض */ }
+  }, []);
+
   useEffect(() => {
-    if (session?.token) loadHistory(session.token);
-  }, [session, loadHistory]);
+    if (session?.token) {
+      loadHistory(session.token);
+      loadLeaves();
+    }
+  }, [session, loadHistory, loadLeaves]);
 
   // ── تسجيل الدخول ─────────────────────────────────────────────────────
   const handleLogin = async (e: React.FormEvent) => {
@@ -331,9 +344,17 @@ export default function TransferClient() {
           <select className={styles.select} value={receiver} onChange={(e) => setReceiver(e.target.value)}>
             <option value="">— اختر الموظف —</option>
             {EMPLOYEES.map((emp) => (
-              <option key={emp.key} value={emp.username}>{emp.name}</option>
+              <option key={emp.key} value={emp.username}>
+                {emp.name}{onLeave.includes(emp.name) ? ' 🏖️ (في إجازة)' : ''}
+              </option>
             ))}
           </select>
+
+          {receiver && onLeave.includes(EMPLOYEES.find((x) => x.username === receiver)?.name || '') && (
+            <div className={`${styles.alert} ${styles.alertWarn}`}>
+              🏖️ هذا الموظف مسجَّل في إجازة حالياً — التحويل ممكن لكنه خارج الدور.
+            </div>
+          )}
 
           <button type="button" className={`${styles.btn} ${styles.btnDashed}`} onClick={pickNext} disabled={busy}>
             🎲 اختيار الموظف الذي عليه الدور
