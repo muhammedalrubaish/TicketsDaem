@@ -1,0 +1,284 @@
+/* تطبيق تحويل البلاغات بالجوال — تصميم جوال أولاً بالكامل RTL */
+
+.app {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+  padding: 14px 12px 40px;
+  direction: rtl;
+  text-align: right;
+  color: #e2e8f0;
+}
+
+.shell {
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+/* ── الترويسة ─────────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.brand h1 {
+  font-size: 17px;
+  font-weight: 800;
+  margin: 0;
+  color: #f8fafc;
+}
+
+.brand span {
+  font-size: 11.5px;
+  color: #94a3b8;
+}
+
+.logo {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: #fff;
+  padding: 3px;
+}
+
+/* ── البطاقات ─────────────────────────────────────────────── */
+.card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 12px;
+  backdrop-filter: blur(6px);
+}
+
+.cardTitle {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #f1f5f9;
+  margin: 0 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── الحقول ───────────────────────────────────────────────── */
+.label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #cbd5e1;
+  margin: 0 0 6px;
+}
+
+.input,
+.select {
+  width: 100%;
+  padding: 13px 12px;
+  border: 1.5px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.75);
+  color: #f8fafc;
+  font-size: 15.5px;
+  outline: none;
+  margin-bottom: 11px;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.input:focus,
+.select:focus {
+  border-color: #22c55e;
+}
+
+.ticketInput {
+  direction: ltr;
+  text-align: left;
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+
+.select option {
+  background: #0f172a;
+  color: #f8fafc;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+}
+
+/* ── الأزرار ──────────────────────────────────────────────── */
+.btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 13px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  transition: transform 0.12s ease, opacity 0.2s ease;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btnPrimary {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  color: #fff;
+}
+
+.btnWhatsapp {
+  background: #25d366;
+  color: #06301a;
+}
+
+.btnGhost {
+  background: rgba(255, 255, 255, 0.07);
+  color: #e2e8f0;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  font-size: 13.5px;
+  padding: 12px;
+}
+
+.btnDashed {
+  background: rgba(99, 102, 241, 0.14);
+  color: #c7d2fe;
+  border: 1.5px dashed #6366f1;
+  font-size: 13.5px;
+  padding: 12px;
+  margin-bottom: 11px;
+}
+
+.btnSmall {
+  padding: 9px 11px;
+  font-size: 12.5px;
+  border-radius: 10px;
+  width: auto;
+}
+
+/* ── التنبيهات ────────────────────────────────────────────── */
+.alert {
+  border-radius: 12px;
+  padding: 11px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.7;
+  margin-bottom: 11px;
+}
+
+.alertOk {
+  background: rgba(22, 163, 74, 0.16);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  color: #86efac;
+}
+
+.alertWarn {
+  background: rgba(217, 119, 6, 0.16);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #fcd34d;
+}
+
+.alertErr {
+  background: rgba(220, 38, 38, 0.16);
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  color: #fca5a5;
+}
+
+/* ── السجل ────────────────────────────────────────────────── */
+.logItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 10px;
+  border-radius: 11px;
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  margin-bottom: 7px;
+  font-size: 12.5px;
+}
+
+.logNum {
+  direction: ltr;
+  font-weight: 800;
+  color: #a5b4fc;
+}
+
+.logMeta {
+  color: #94a3b8;
+  font-size: 11.5px;
+}
+
+/* ── متفرقات ──────────────────────────────────────────────── */
+.muted {
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  padding: 5px 11px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #cbd5e1;
+}
+
+.linkRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.codeBox {
+  background: #020617;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 11px;
+  padding: 10px;
+  font-size: 11px;
+  color: #7dd3fc;
+  direction: ltr;
+  text-align: left;
+  word-break: break-all;
+  max-height: 130px;
+  overflow: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace !important;
+}
+
+.steps {
+  padding-inline-start: 18px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 2;
+  color: #cbd5e1;
+}
+
+.steps li {
+  margin-bottom: 4px;
+}

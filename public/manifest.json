@@ -8,12 +8,12 @@
   "theme_color": "#121212",
   "icons": [
     {
-      "src": "/%D8%B4%D8%B9%D8%A7%D8%B1%20%D8%A8%D9%84%D8%AF%D9%8A%20%D8%A7%D9%84%D8%B1%D8%B3%D9%85%D9%8I.png",
+      "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/%D8%B4%D8%B9%D8%A7%D8%B1%20%D8%A8%D9%84%D8%AF%D9%8A%20%D8%A7%D9%84%D8%B1%D8%B3%D9%85%D9%8I.png",
+      "src": "/%D8%B4%D8%B9%D8%A7%D8%B1%20%D8%A8%D9%84%D8%AF%D9%8A%20%D8%A7%D9%84%D8%B1%D8%B3%D9%85%D9%8A.png",
       "sizes": "512x512",
       "type": "image/png"
     }
