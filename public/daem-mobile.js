@@ -449,17 +449,35 @@
   var selected = null;
   var lastResult = null;
 
+  // ── مقاسات اللوحة: عادية (أكبر من السابق) وملء الشاشة ────────────────
+  var SIZE_KEY = 'balady_transfer_panel_size';
+  var panelSize = 'normal';
+  try { panelSize = localStorage.getItem(SIZE_KEY) || 'normal'; } catch (e) { }
+
   var panel = doc.createElement('div');
   panel.id = 'balady-transfer-panel';
   panel.setAttribute('dir', 'rtl');
-  panel.style.cssText = [
-    'position:fixed', 'inset:auto 0 0 0', 'z-index:2147483647',
-    'background:#ffffff', 'border-top-right-radius:18px', 'border-top-left-radius:18px',
-    'box-shadow:0 -8px 40px rgba(0,0,0,.35)', 'padding:14px', 'max-height:88vh', 'overflow:auto',
-    'font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,Arial,sans-serif',
-    'font-size:14px', 'color:#0f172a', 'direction:rtl', 'text-align:right',
-    'box-sizing:border-box'
-  ].join(';');
+
+  function applyPanelSize() {
+    var full = panelSize === 'full';
+    panel.style.cssText = [
+      'position:fixed',
+      full ? 'inset:0' : 'inset:auto 0 0 0',
+      'z-index:2147483647',
+      'background:#ffffff',
+      full ? 'border-radius:0' : 'border-top-right-radius:22px;border-top-left-radius:22px',
+      'box-shadow:0 -10px 46px rgba(0,0,0,.4)',
+      // حشوة سفلية إضافية لتفادي شريط المتصفح السفلي في الجوال
+      'padding:20px 18px calc(28px + env(safe-area-inset-bottom,0px))',
+      full ? 'height:100%' : 'min-height:74vh;max-height:94vh',
+      'overflow:auto',
+      '-webkit-overflow-scrolling:touch',
+      'font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,Arial,sans-serif',
+      'font-size:16px', 'color:#0f172a', 'direction:rtl', 'text-align:right',
+      'box-sizing:border-box'
+    ].join(';');
+  }
+  applyPanelSize();
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -475,47 +493,59 @@
     return '<option value="' + esc(c) + '"' + (c === category ? ' selected' : '') + '>' + esc(c) + '</option>';
   }).join('');
 
+  // أنماط موحّدة ومكبَّرة لعناصر اللوحة (أهداف لمس أكبر وخط أوضح)
+  var S = {
+    label: 'display:block;font-size:14.5px;font-weight:700;margin:0 0 7px;color:#334155',
+    field: 'width:100%;padding:15px 13px;border:1.8px solid #cbd5e1;border-radius:14px;' +
+           'font-size:17px;margin-bottom:14px;box-sizing:border-box;background:#fff;color:#0f172a',
+    btn:   'width:100%;padding:17px;border:none;border-radius:15px;font-size:17px;font-weight:800;cursor:pointer'
+  };
+
   panel.innerHTML =
-    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">' +
-      '<strong style="font-size:15px">🏛️ تحويل بلاغ — وحدة بلدي</strong>' +
-      '<button id="bt-close" style="border:none;background:#f1f5f9;border-radius:10px;width:34px;height:34px;font-size:17px;cursor:pointer">✕</button>' +
+    '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px">' +
+      '<strong style="font-size:18px">🏛️ تحويل بلاغ — وحدة بلدي</strong>' +
+      '<div style="display:flex;gap:7px;flex-shrink:0">' +
+        '<button id="bt-size" title="تكبير/تصغير اللوحة" style="border:none;background:#e0e7ff;color:#4338ca;border-radius:13px;width:44px;height:44px;font-size:19px;cursor:pointer">' +
+          (panelSize === 'full' ? '🗕' : '🗖') + '</button>' +
+        '<button id="bt-close" style="border:none;background:#f1f5f9;border-radius:13px;width:44px;height:44px;font-size:21px;cursor:pointer">✕</button>' +
+      '</div>' +
     '</div>' +
 
-    '<div id="bt-status" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:9px 11px;margin-bottom:10px;font-size:12.5px;line-height:1.8">' +
+    '<div id="bt-status" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:15px;padding:13px 15px;margin-bottom:15px;font-size:15px;line-height:2">' +
       '🔢 رقم البلاغ: <b id="bt-ticket-label">' + esc(ticket || 'لم يُكتشف') + '</b><br>' +
       '📁 التصنيف: <b style="color:' + (category === 'أخرى' ? '#d97706' : '#059669') + '">' +
         esc(category) + '</b>' +
       (categoryRaw && normText(categoryRaw) !== normText(category)
-        ? '<br><span style="color:#64748b;font-size:11.5px">↳ في داعم: ' + esc(categoryRaw) + '</span>'
+        ? '<br><span style="color:#64748b;font-size:13.5px">↳ في داعم: ' + esc(categoryRaw) + '</span>'
         : '') + '<br>' +
       '🎯 حقل المعين له: <b style="color:' + (assigneeField ? '#059669' : '#dc2626') + '">' +
         (assigneeField ? 'تم العثور عليه ✓' : 'لم يُعثر عليه ✕') + '</b>' +
     '</div>' +
 
-    '<label style="display:block;font-size:12.5px;font-weight:700;margin:0 0 5px">رقم البلاغ</label>' +
+    '<label style="' + S.label + '">رقم البلاغ</label>' +
     '<input id="bt-ticket" value="' + esc(ticket) + '" placeholder="IM12345678" ' +
-      'style="width:100%;padding:11px;border:1.5px solid #cbd5e1;border-radius:11px;font-size:15px;margin-bottom:10px;box-sizing:border-box;direction:ltr;text-align:left">' +
+      'style="' + S.field + ';direction:ltr;text-align:left;letter-spacing:1px;font-weight:700">' +
 
-    '<label style="display:block;font-size:12.5px;font-weight:700;margin:0 0 5px">المحوَّل له</label>' +
-    '<select id="bt-emp" style="width:100%;padding:11px;border:1.5px solid #cbd5e1;border-radius:11px;font-size:15px;margin-bottom:8px;box-sizing:border-box;background:#fff">' +
+    '<label style="' + S.label + '">المحوَّل له</label>' +
+    '<select id="bt-emp" style="' + S.field + ';margin-bottom:10px">' +
       '<option value="">— اختر الموظف —</option>' + optionsHtml +
     '</select>' +
 
-    '<button id="bt-auto" style="width:100%;padding:11px;border:1.5px dashed #6366f1;background:#eef2ff;color:#4338ca;border-radius:11px;font-size:13.5px;font-weight:700;margin-bottom:12px;cursor:pointer">🎲 اختيار الموظف الذي عليه الدور</button>' +
+    '<button id="bt-auto" style="' + S.btn + ';border:1.8px dashed #6366f1;background:#eef2ff;color:#4338ca;font-size:15.5px;padding:15px;margin-bottom:16px">🎲 اختيار الموظف الذي عليه الدور</button>' +
 
-    '<label style="display:block;font-size:12.5px;font-weight:700;margin:0 0 5px">تصنيف البلاغ</label>' +
-    '<select id="bt-cat" style="width:100%;padding:11px;border:1.5px solid #cbd5e1;border-radius:11px;font-size:15px;margin-bottom:12px;box-sizing:border-box;background:#fff">' +
+    '<label style="' + S.label + '">تصنيف البلاغ</label>' +
+    '<select id="bt-cat" style="' + S.field + ';margin-bottom:16px">' +
       categoryOptionsHtml +
     '</select>' +
 
-    '<button id="bt-go" style="width:100%;padding:14px;border:none;background:#059669;color:#fff;border-radius:12px;font-size:15.5px;font-weight:800;cursor:pointer">⚡ تحويل + تسجيل + حفظ وخروج</button>' +
+    '<button id="bt-go" style="' + S.btn + ';background:#059669;color:#fff;font-size:18px;padding:19px">⚡ تحويل + تسجيل + حفظ وخروج</button>' +
 
-    '<div id="bt-after" style="display:none;margin-top:10px">' +
-      '<button id="bt-wa" style="width:100%;padding:12px;border:none;background:#25D366;color:#fff;border-radius:12px;font-size:14.5px;font-weight:800;cursor:pointer">💬 إرسال النموذج للمجموعة</button>' +
-      '<button id="bt-save" style="width:100%;padding:11px;border:1.5px solid #cbd5e1;background:#fff;color:#0f172a;border-radius:11px;font-size:13.5px;font-weight:700;margin-top:7px;cursor:pointer">💾 حفظ وخروج من داعم</button>' +
+    '<div id="bt-after" style="display:none;margin-top:13px">' +
+      '<button id="bt-wa" style="' + S.btn + ';background:#25D366;color:#fff">💬 إرسال النموذج للمجموعة</button>' +
+      '<button id="bt-save" style="' + S.btn + ';border:1.8px solid #cbd5e1;background:#fff;color:#0f172a;font-size:15.5px;padding:15px;margin-top:9px">💾 حفظ وخروج من داعم</button>' +
     '</div>' +
 
-    '<div id="bt-log" style="margin-top:10px;font-size:12.5px;line-height:1.8;color:#334155"></div>';
+    '<div id="bt-log" style="margin-top:14px;font-size:14.5px;line-height:2;color:#334155"></div>';
 
   doc.body.appendChild(panel);
 
@@ -536,6 +566,14 @@
   $('bt-close').onclick = function () {
     panel.parentNode.removeChild(panel);
     window.__baladyTransferPanelOpen = false;
+  };
+
+  // ── التبديل بين الحجم العادي وملء الشاشة (يُحفظ للمرات القادمة) ────────
+  $('bt-size').onclick = function () {
+    panelSize = panelSize === 'full' ? 'normal' : 'full';
+    applyPanelSize();
+    $('bt-size').textContent = panelSize === 'full' ? '🗕' : '🗖';
+    try { localStorage.setItem(SIZE_KEY, panelSize); } catch (e) { }
   };
 
   // ── اختيار الموظف الذي عليه الدور ──────────────────────────────────────
