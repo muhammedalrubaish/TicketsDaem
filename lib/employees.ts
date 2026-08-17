@@ -159,8 +159,15 @@ export function normalizeCategory(rawCategory?: string | null): string {
 
   const lower = raw.toLowerCase();
   if (lower.includes('digging') || lower.includes('حفريات')) return 'مسار منصة الحفريات';
-  if (lower.includes('commercial') || lower.includes('تجارية')) return 'الرخص التجارية';
-  if (lower.includes('building') || lower.includes('إنشائية')) return 'الرخص الإنشائية';
+  if (lower.includes('commercial') || lower.includes('تجارية') || lower.includes('رخصة تجارية')) return 'الرخص التجارية';
+  // «Building Permit - خدمة الرخص الإنشائية» و«إصدار رخصة بناء» كلاهما يعني الرخص الإنشائية
+  if (
+    lower.includes('building') ||
+    lower.includes('إنشائية') ||
+    lower.includes('انشائية') ||
+    lower.includes('رخصة بناء') ||
+    lower.includes('رخص بناء')
+  ) return 'الرخص الإنشائية';
   if (lower.includes('survey') || lower.includes('مساحي')) return 'التقرير المساحي';
   if (lower.includes('business') || lower.includes('أعمال')) return 'بلدي أعمال';
   if (lower.includes('complaint') || lower.includes('شكوى')) {
