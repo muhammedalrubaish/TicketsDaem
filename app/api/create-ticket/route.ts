@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabase } from '../../../lib/supabase';
 import { sendPushNotification } from '../../../lib/push';
 import { createNotionTicket } from '../../../lib/notionSync';
+import { balanceQuietly } from '../../../lib/leaves';
 
 export async function POST(req: Request) {
   try {
@@ -46,6 +47,9 @@ export async function POST(req: Request) {
     }
 
     const insertedTicket = insertedData?.[0];
+
+    // معادلة الموظفين في إجازة بعد كل بلاغ جديد (يشمل البلاغات القادمة من الإضافة)
+    await balanceQuietly();
 
     // Trigger Push Notification to all subscribed devices
     try {

@@ -40,9 +40,17 @@ export interface TicketRow {
 /**
  * حساب الموظف الذي عليه الدور: صاحب أقل عدد بلاغات منذ تاريخ بداية التوزيع.
  * نفس خوارزمية `getLeastReceiver` في إضافة Daem Plus.
+ *
+ * @param onLeave أسماء الموظفين في إجازة سارية — يُستثنون من الدور.
+ *        (المعادلة التلقائية ترفع عددهم أصلاً، وهذا استثناء صريح إضافي)
  */
-export function pickNextReceiver(tickets: TicketRow[]): { employee: Employee; counts: Record<string, number> } {
-  const rotation = EMPLOYEES.filter((e) => e.inRotation);
+export function pickNextReceiver(
+  tickets: TicketRow[],
+  onLeave: string[] = []
+): { employee: Employee; counts: Record<string, number> } {
+  const available = EMPLOYEES.filter((e) => e.inRotation && !onLeave.includes(e.name));
+  // إن كان الجميع في إجازة نعود للقائمة الكاملة حتى لا يتعطل التوزيع
+  const rotation = available.length > 0 ? available : EMPLOYEES.filter((e) => e.inRotation);
   const counts: Record<string, number> = {};
   rotation.forEach((e) => { counts[e.name] = 0; });
 

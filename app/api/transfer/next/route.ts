@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabase } from '../../../../lib/supabase';
 import { DISTRIBUTION_START_DATE } from '../../../../lib/employees';
 import { verifyToken, corsHeaders, pickNextReceiver } from '../../../../lib/transfer';
+import { getEmployeesOnLeave } from '../../../../lib/leaves';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,13 +38,16 @@ export async function GET(req: Request) {
       from += PAGE_SIZE;
     }
 
-    const { employee, counts } = pickNextReceiver(all);
+    // استثناء الموظفين في إجازة سارية من الدور
+    const onLeave = await getEmployeesOnLeave();
+    const { employee, counts } = pickNextReceiver(all, onLeave);
 
     return NextResponse.json(
       {
         success: true,
         next: { name: employee.name, username: employee.username },
         counts,
+        onLeave,
         total: all.length,
       },
       { headers }

@@ -10,6 +10,7 @@ import {
   riyadhNow,
   buildTransferMessage,
 } from '../../../lib/transfer';
+import { balanceQuietly, getEmployeesOnLeave } from '../../../lib/leaves';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,6 +61,10 @@ export async function POST(req: Request) {
     const category = normalizeCategory(body.category);
     const date = /^\d{4}-\d{2}-\d{2}$/.test(String(body.date || '')) ? String(body.date) : riyadhDate();
     const time = riyadhTime();
+
+    // تنبيه (وليس منعاً) عند التحويل لموظف في إجازة — القرار يبقى للمستخدم
+    const onLeave = await getEmployeesOnLeave();
+    const receiverOnLeave = onLeave.includes(emp.name);
 
     // ── منع التكرار: هل البلاغ مسجَّل مسبقاً؟ ────────────────────────────
     const { data: existing, error: lookupError } = await supabase
@@ -127,6 +132,9 @@ export async function POST(req: Request) {
       console.error('[Transfer] Push notification failed:', pushErr);
     }
 
+    // معادلة الموظفين في إجازة بعد كل بلاغ جديد ليبقوا متساوين مع الأعلى
+    await balanceQuietly();
+
     const transfer = { ticketNumber, receiver: emp.name, category, date, time };
 
     return NextResponse.json(
@@ -137,6 +145,8 @@ export async function POST(req: Request) {
         transfer,
         whatsappMessage: buildTransferMessage(transfer, body.template),
         by: user.name,
+        receiverOnLeave,
+        warning: receiverOnLeave ? `تنبيه: ${emp.name} مسجَّل في إجازة حالياً` : undefined,
       },
       { headers }
     );
