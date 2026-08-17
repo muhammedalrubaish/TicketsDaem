@@ -55,6 +55,60 @@
     { name: 'ثامر المنصور',     username: 't.almansour', phone: '966570770940' }
   ];
 
+  // ─── تصنيفات لوحة التحكم المعتمدة (مطابقة لـ lib/employees.ts) ────────
+  var CATEGORIES = [
+    'الرخص التجارية', 'الرخص الإنشائية', 'بلدي أعمال', 'مسار منصة الحفريات',
+    'التقرير المساحي', 'الإدارة الذكية للنظافة', 'خدمة المواعيد الالكترونية',
+    'الشهادات الصحية', 'خدمة مرافق إيواء', 'مستشارك بلدي', 'نظام الصلاحيات',
+    'تطبيق بلدي', 'شكوى المستفيد منصة بلدي', 'منصة الرقابة الموحدة (ممثل)',
+    'لوحة التحكم', 'خدمة الدمج والتجزئة', 'خدمة تحديث الصكوك',
+    'خدمة اعتماد المخططات الخاصة', 'تصنيف مقدمي خدمات المدن', 'الهوية العقارية',
+    'شكوى المستفيد بلدي 940', 'خدمة الفرص الاستثمارية', 'خدمة السكن الجماعي',
+    'خدمة السكن الجماعي للأفراد', 'صفحة بلدي', 'GIS Web Portal', 'رمز الاستجابة',
+    'إكرام الموتى', 'التشوه البصري', 'امتثال', 'رقابة الصحي والأسواق',
+    'الخرائط الجغرافية', 'صوت العميل', 'نظام المتاجر المتنقلة',
+    'شؤون البلدية والقروية والإسكان', 'Investment Opportunities',
+    'امتثال المباني', 'منصة رسم تقديم منتجات التبغ', 'فاتورة سداد آلياً', 'أخرى'
+  ];
+
+  /**
+   * توحيد التصنيف القادم من داعم إلى أحد تصنيفات لوحة التحكم.
+   * مطابقة تماماً لدالة normalizeCategory في lib/employees.ts.
+   */
+  function normalizeCategory(raw) {
+    if (!raw) return 'أخرى';
+    raw = String(raw).trim();
+    if (!raw) return 'أخرى';
+
+    // ١. مطابقة مباشرة مع التصنيفات المعتمدة
+    for (var i = 0; i < CATEGORIES.length; i++) {
+      var cat = CATEGORIES[i];
+      if (cat === 'أخرى') continue;
+      if (raw.indexOf(cat) > -1 || cat.indexOf(raw) > -1) return cat;
+    }
+
+    // ٢. مطابقة مرنة بالكلمات الدلالية
+    var l = raw.toLowerCase();
+    if (l.indexOf('digging') > -1 || l.indexOf('حفريات') > -1) return 'مسار منصة الحفريات';
+    if (l.indexOf('commercial') > -1 || l.indexOf('تجارية') > -1 || l.indexOf('رخصة تجارية') > -1) return 'الرخص التجارية';
+    if (l.indexOf('building permit') > -1 || l.indexOf('building') > -1 ||
+        l.indexOf('إنشائية') > -1 || l.indexOf('انشائية') > -1 ||
+        l.indexOf('رخصة بناء') > -1 || l.indexOf('رخص بناء') > -1) return 'الرخص الإنشائية';
+    if (l.indexOf('survey') > -1 || l.indexOf('مساحي') > -1) return 'التقرير المساحي';
+    if (l.indexOf('business') > -1 || l.indexOf('أعمال') > -1) return 'بلدي أعمال';
+    if (l.indexOf('complaint') > -1 || l.indexOf('شكوى') > -1) {
+      return l.indexOf('940') > -1 ? 'شكوى المستفيد بلدي 940' : 'شكوى المستفيد منصة بلدي';
+    }
+    if (l.indexOf('hygiene') > -1 || l.indexOf('صحي') > -1 || l.indexOf('أسواق') > -1) return 'رقابة الصحي والأسواق';
+    if (l.indexOf('clean') > -1 || l.indexOf('نظافة') > -1) return 'الإدارة الذكية للنظافة';
+    if (l.indexOf('health') > -1) return 'الشهادات الصحية';
+    if (l.indexOf('appointment') > -1 || l.indexOf('مواعيد') > -1) return 'خدمة المواعيد الالكترونية';
+    if (l.indexOf('investment') > -1 || l.indexOf('استثمار') > -1) return 'خدمة الفرص الاستثمارية';
+    if (l.indexOf('housing') > -1 || l.indexOf('سكن جماعي') > -1) return 'خدمة السكن الجماعي';
+
+    return 'أخرى';
+  }
+
   // ═══════════════════════════════════════════════════════════════════════
   // أدوات التعامل مع الصفحة والإطارات (منقولة من إضافة Daem Plus)
   // ═══════════════════════════════════════════════════════════════════════
@@ -121,36 +175,102 @@
     return '';
   }
 
-  /** التصنيف: الخلية المجاورة لتسمية «التصنيف» ثم حقول subcategory/product */
-  function getClassification() {
-    var cells = queryAll('td, label, span');
-    for (var i = 0; i < cells.length; i++) {
-      var txt = (cells[i].innerText || '').trim();
-      if (txt === 'التصنيف:' || txt === 'التصنيف' || txt === 'Category:' || txt === 'Category') {
-        var td = cells[i];
-        while (td && td.tagName !== 'TD' && td.parentElement) td = td.parentElement;
-        if (td && td.tagName === 'TD') {
-          var input = null;
-          if (td.previousElementSibling) input = td.previousElementSibling.querySelector('input[type="text"], select');
-          if (!input && td.nextElementSibling) input = td.nextElementSibling.querySelector('input[type="text"], select');
-          if (input && input.value && input.value.trim() && input.value.trim().toLowerCase() !== 'incident') {
-            return input.value.trim();
-          }
-        }
-      }
-    }
+  /** تنظيف النص للمقارنة (إزالة النقطتين والمسافات الزائدة وتوحيد الألف والياء) */
+  function normText(s) {
+    return String(s || '')
+      .replace(/[ً-ٟ]/g, '')
+      .replace(/[ىی]/g, 'ي')
+      .replace(/[أإآ]/g, 'ا')
+      .replace(/[:：]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
 
-    var texts = queryAll('input[type="text"]');
-    for (var j = 0; j < texts.length; j++) {
-      var name = (texts[j].name || '').toLowerCase();
-      var id = (texts[j].id || '').toLowerCase();
-      var isTarget = (name.indexOf('subcategory') > -1 || id.indexOf('subcategory') > -1 ||
-                      name.indexOf('product') > -1 || id.indexOf('product') > -1);
-      if (isTarget && name.indexOf('group') === -1 && id.indexOf('group') === -1) {
-        if (texts[j].value && texts[j].value.trim()) return texts[j].value.trim();
+  /**
+   * قراءة قيمة حقل من خلال تسميته داخل جدول ريميدي.
+   * التخطيط RTL فالحقل قد يكون في الخلية السابقة أو التالية، ولذلك نفحص
+   * الخليتين ثم بقية خلايا نفس الصف كحل أخير.
+   */
+  function readFieldByLabel(labelNames) {
+    var cells = queryAll('td, label, span, div');
+
+    for (var i = 0; i < cells.length; i++) {
+      var el = cells[i];
+      if (el.children && el.children.length > 2) continue;
+
+      var txt = normText(el.innerText);
+      if (!txt || txt.length > 25) continue;
+      // مطابقة تامة فقط، حتى لا يلتقط «التصنيف الفرعي» بدل «التصنيف»
+      if (labelNames.indexOf(txt) === -1) continue;
+
+      var td = el;
+      while (td && td.tagName !== 'TD' && td.parentElement) td = td.parentElement;
+      if (!td || td.tagName !== 'TD') continue;
+
+      var probes = [];
+      if (td.previousElementSibling) probes.push(td.previousElementSibling);
+      if (td.nextElementSibling) probes.push(td.nextElementSibling);
+      var row = td.closest ? td.closest('tr') : null;
+      if (row) probes = probes.concat(Array.prototype.slice.call(row.children));
+
+      for (var p = 0; p < probes.length; p++) {
+        if (probes[p] === td) continue;
+        var input = probes[p].querySelector
+          ? probes[p].querySelector('input[type="text"], select, textarea')
+          : null;
+        if (!input) continue;
+        var val = (input.value || '').trim();
+        if (val && val.toLowerCase() !== 'incident') return val;
       }
     }
     return '';
+  }
+
+  /**
+   * جمع كل القيم المرشّحة للتصنيف بترتيب الأولوية.
+   * حقل «التصنيف» في داعم يحمل قيمة مثل: "Building Permit - خدمة الرخص الإنشائية"
+   * وهي التي يجب اعتمادها، لا «الخدمة» ولا «نوع المشكلة».
+   */
+  function collectCategoryCandidates() {
+    var out = [];
+    var push = function (v) { if (v && out.indexOf(v) === -1) out.push(v); };
+
+    // ١. حقل «التصنيف» الرئيسي — الأولوية القصوى
+    push(readFieldByLabel(['التصنيف', 'Category']));
+
+    // ٢. حقول النظام الخاصة بالتصنيف (product.type / subcategory)
+    var texts = queryAll('input[type="text"], select');
+    for (var j = 0; j < texts.length; j++) {
+      var name = (texts[j].name || '').toLowerCase();
+      var id = (texts[j].id || '').toLowerCase();
+      if (name.indexOf('group') > -1 || id.indexOf('group') > -1) continue;
+      var isTarget = name.indexOf('product.type') > -1 || id.indexOf('product.type') > -1 ||
+                     name.indexOf('subcategory') > -1 || id.indexOf('subcategory') > -1 ||
+                     name.indexOf('product') > -1 || id.indexOf('product') > -1;
+      if (!isTarget) continue;
+      var val = (texts[j].value || '').trim();
+      if (val && val.toLowerCase() !== 'incident') push(val);
+    }
+
+    // ٣. حقول مساندة تُستخدم فقط إذا لم ينجح ما سبق
+    push(readFieldByLabel(['الخدمة']));
+    push(readFieldByLabel(['نوع المشكلة']));
+    push(readFieldByLabel(['التصنيف الفرعي']));
+
+    return out;
+  }
+
+  /**
+   * اختيار التصنيف المعتمد: أول قيمة مرشّحة تُطابق أحد تصنيفات لوحة التحكم.
+   * تُرجع { category: التصنيف المعتمد, raw: النص كما هو في داعم }
+   */
+  function detectCategory() {
+    var candidates = collectCategoryCandidates();
+    for (var i = 0; i < candidates.length; i++) {
+      var mapped = normalizeCategory(candidates[i]);
+      if (mapped !== 'أخرى') return { category: mapped, raw: candidates[i] };
+    }
+    return { category: 'أخرى', raw: candidates[0] || '' };
   }
 
   /** حقل «المعين له» في نظام HPSM/ريميدي */
@@ -322,7 +442,9 @@
 
   var doc = topDocument();
   var ticket = getTicketNumber();
-  var category = getClassification();
+  var detected = detectCategory();
+  var category = detected.category;   // التصنيف المعتمد بصيغة لوحة التحكم
+  var categoryRaw = detected.raw;     // النص الأصلي كما هو في داعم
   var assigneeField = findAssigneeInput();
   var selected = null;
   var lastResult = null;
@@ -349,6 +471,10 @@
     return '<option value="' + esc(e.username) + '">' + esc(e.name) + '</option>';
   }).join('');
 
+  var categoryOptionsHtml = CATEGORIES.map(function (c) {
+    return '<option value="' + esc(c) + '"' + (c === category ? ' selected' : '') + '>' + esc(c) + '</option>';
+  }).join('');
+
   panel.innerHTML =
     '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">' +
       '<strong style="font-size:15px">🏛️ تحويل بلاغ — وحدة بلدي</strong>' +
@@ -357,7 +483,11 @@
 
     '<div id="bt-status" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:9px 11px;margin-bottom:10px;font-size:12.5px;line-height:1.8">' +
       '🔢 رقم البلاغ: <b id="bt-ticket-label">' + esc(ticket || 'لم يُكتشف') + '</b><br>' +
-      '📁 التصنيف: <b>' + esc(category || 'غير محدد') + '</b><br>' +
+      '📁 التصنيف: <b style="color:' + (category === 'أخرى' ? '#d97706' : '#059669') + '">' +
+        esc(category) + '</b>' +
+      (categoryRaw && normText(categoryRaw) !== normText(category)
+        ? '<br><span style="color:#64748b;font-size:11.5px">↳ في داعم: ' + esc(categoryRaw) + '</span>'
+        : '') + '<br>' +
       '🎯 حقل المعين له: <b style="color:' + (assigneeField ? '#059669' : '#dc2626') + '">' +
         (assigneeField ? 'تم العثور عليه ✓' : 'لم يُعثر عليه ✕') + '</b>' +
     '</div>' +
@@ -372,6 +502,11 @@
     '</select>' +
 
     '<button id="bt-auto" style="width:100%;padding:11px;border:1.5px dashed #6366f1;background:#eef2ff;color:#4338ca;border-radius:11px;font-size:13.5px;font-weight:700;margin-bottom:12px;cursor:pointer">🎲 اختيار الموظف الذي عليه الدور</button>' +
+
+    '<label style="display:block;font-size:12.5px;font-weight:700;margin:0 0 5px">تصنيف البلاغ</label>' +
+    '<select id="bt-cat" style="width:100%;padding:11px;border:1.5px solid #cbd5e1;border-radius:11px;font-size:15px;margin-bottom:12px;box-sizing:border-box;background:#fff">' +
+      categoryOptionsHtml +
+    '</select>' +
 
     '<button id="bt-go" style="width:100%;padding:14px;border:none;background:#059669;color:#fff;border-radius:12px;font-size:15.5px;font-weight:800;cursor:pointer">⚡ تحويل + تسجيل + حفظ وخروج</button>' +
 
@@ -430,6 +565,8 @@
     if (!emp) { log('❌ اختر المحوَّل له أولاً.', '#dc2626'); return; }
 
     selected = emp;
+    // التصنيف المعتمد من القائمة (يسمح بتصحيح الاكتشاف التلقائي يدوياً)
+    category = $('bt-cat').value || category;
 
     // ١) تعبئة حقل المعين له داخل صفحة داعم
     var field = assigneeField || findAssigneeInput();
@@ -494,7 +631,7 @@
        '━━━━━━━━━━━━━━━━━━\n' +
        '🔢 *رقم البلاغ:* ' + ticketVal + '\n' +
        '👤 *المحوّل له:* ' + (emp.name || '—') + '\n' +
-       '📁 *التصنيف:* ' + (category || 'غير محدد') + '\n' +
+       '📁 *التصنيف:* ' + (($('bt-cat') && $('bt-cat').value) || category || 'غير محدد') + '\n' +
        '📅 *تاريخ البلاغ:* ' + date + '\n' +
        '⏰ *وقت التحويل:* ' + time + '\n' +
        '━━━━━━━━━━━━━━━━━━');
