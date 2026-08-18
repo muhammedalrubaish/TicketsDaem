@@ -17,6 +17,14 @@ services:
       - DATABASE_URL=postgresql://postgres:BaladyAdmin2026Secure!@db:5432/balady_db
       - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
       - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      # --- إعدادات نوشن (منفصلة ويمكن إضافة قواعد جديدة دون تعديل الكود) ---
+      - NOTION_SECRET=${NOTION_SECRET}
+      - NOTION_DATABASE_ID=${NOTION_DATABASE_ID}
+      - NOTION_STATUS_DATABASE_ID=${NOTION_STATUS_DATABASE_ID}
+      # قواعد نوشن الإضافية (JSON) - تُضاف مستقبلاً هنا بدون أي تعديل برمجي
+      - NOTION_EXTRA_DATABASES=${NOTION_EXTRA_DATABASES}
+      # عنوان بديل لواجهة نوشن (وسيط/سيرفر خارجي) - اختياري
+      - NOTION_API_BASE_URL=${NOTION_API_BASE_URL}
     depends_on:
       - db
     networks:
