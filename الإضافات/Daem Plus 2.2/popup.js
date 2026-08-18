@@ -25,8 +25,10 @@ window.addEventListener('message', (event) => {
 });
 
 // تحديث رابط الإطار ليشمل رقم الإصدار والصلاحية وكلمة المرور المخزنة وحالة التصحيح الإملائي
-function updateIframeSrc() {
+async function updateIframeSrc() {
   try {
+    // عنوان السيرفر يُقرأ من ملف الإعدادات المنفصل config.js (سحابي أو خارجي)
+    const server = await DaemConfig.getServerUrl();
     chrome.storage.local.get(['daemRole', 'daemPassword', 'daemUsername', 'daemUserKey', 'daemUserArabic', 'daemSpellingEnabled'], (result) => {
       const role = (result && result.daemRole) ? result.daemRole : '';
       const pass = (result && result.daemPassword) ? result.daemPassword : '';
@@ -34,7 +36,7 @@ function updateIframeSrc() {
       const spelling = (result && result.daemSpellingEnabled !== false) ? 'true' : 'false';
       const version = chrome.runtime.getManifest().version;
       
-      const targetSrc = "https://tickets-daem.vercel.app/extension-popup?v=" + version + "&role=" + role + "&p=" + encodeURIComponent(pass) + "&spelling=" + spelling;
+      const targetSrc = server + "/extension-popup?v=" + version + "&role=" + role + "&p=" + encodeURIComponent(pass) + "&spelling=" + spelling;
       
       // منع التكرار اللانهائي للتحديث
       if (iframe && iframe.src !== targetSrc && iframe.src !== targetSrc + "/") {
@@ -46,5 +48,16 @@ function updateIframeSrc() {
   }
 }
 
+// فتح صفحة إعدادات السيرفر من داخل النافذة المنبثقة
+function bindSettingsButton() {
+  const btn = document.getElementById('open-settings');
+  if (btn) {
+    btn.addEventListener('click', () => chrome.runtime.openOptionsPage());
+  }
+}
+
 // تشغيل التحديث عند الجاهزية
-document.addEventListener('DOMContentLoaded', updateIframeSrc);
+document.addEventListener('DOMContentLoaded', () => {
+  bindSettingsButton();
+  updateIframeSrc();
+});

@@ -1,3 +1,17 @@
+// ==============================================================
+//  التعرّف على صفحات لوحة التحكم عبر إعدادات السيرفر المنفصلة (config.js)
+//  لا يوجد أي عنوان سيرفر مكتوب داخل هذا الملف.
+// ==============================================================
+function daemIsDashboardPage() {
+  const href = window.location.href;
+  return (typeof DaemConfig !== 'undefined') ? DaemConfig.isDashboardUrl(href) : false;
+}
+
+function daemIsDashboardPath(paths) {
+  const href = window.location.href;
+  return (typeof DaemConfig !== 'undefined') ? DaemConfig.isDashboardPath(href, paths) : false;
+}
+
 // منطق تلوين خلية "رقم التذكرة" v22 - الاستقرار النهائي مع لوحة التحكم العائمة Premium
 let websiteTickets = [];
 let listWarningDismissed = false;
@@ -2299,8 +2313,7 @@ function injectFloatingPanel() {
   updateSubmitButtonText(nextEmployee);
   refreshAutoAssignButtonVisibility();
 
-  const isDashboard = window.location.href.includes('tickets-daem.vercel.app') ||
-    window.location.href.includes('localhost');
+  const isDashboard = daemIsDashboardPage();
   const btnCopy = document.getElementById('btn-copy-new-ticket');
   if (isDashboard && btnCopy) {
     btnCopy.style.display = 'none';
@@ -2715,8 +2728,7 @@ function refreshAutoAssignButtonVisibility() {
   const btnCopy = document.getElementById('btn-copy-new-ticket');
   if (!btnCopy) return;
 
-  const isDashboard = window.location.href.includes('tickets-daem.vercel.app') ||
-    window.location.href.includes('localhost');
+  const isDashboard = daemIsDashboardPage();
 
   if (isDashboard) {
     btnCopy.style.display = 'none';
@@ -2740,8 +2752,7 @@ function refreshAutoAssignButtonVisibility() {
 }
 
 function checkCopiedTicketData() {
-  const isDashboard = window.location.href.includes('tickets-daem.vercel.app') ||
-    window.location.href.includes('localhost');
+  const isDashboard = daemIsDashboardPage();
   const btn = document.getElementById('btn-fill-copied');
 
   if (!isDashboard) {
@@ -2888,10 +2899,7 @@ function autoFillOnWebsiteNewPage() {
   }
   if (daemAutoFilled) return;
 
-  const isTargetPage = window.location.href.includes('tickets-daem.vercel.app/new') ||
-    window.location.href.includes('tickets-daem.vercel.app/create') ||
-    window.location.href.includes('localhost:3000/new') ||
-    window.location.href.includes('localhost:3000/create');
+  const isTargetPage = daemIsDashboardPath(['/new', '/create']);
 
   if (isTargetPage) {
     const ticketInput = document.getElementById('ticketNumber');

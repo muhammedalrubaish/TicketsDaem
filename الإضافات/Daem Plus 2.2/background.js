@@ -1,10 +1,14 @@
 // الخدمة الخلفية لتجاوز مشاكل CORS v1
-const DASHBOARD_API = "https://tickets-daem.vercel.app/api/tickets-json";
+// عنوان السيرفر لم يعد مكتوباً هنا - يُقرأ من ملف الإعدادات المنفصل config.js
+importScripts('config.js');
+
+// بناء رابط أي واجهة برمجية على السيرفر المُعد حالياً (السحابي أو الخارجي)
+const api = (path) => DaemConfig.apiUrl(path);
 
 // وظيفة جلب البيانات من الموقع (تتجاوز CORS لأنها تعمل في الخلفية)
 async function fetchTickets() {
     try {
-        const response = await fetch(DASHBOARD_API);
+        const response = await fetch(await api("/api/tickets-json"));
         if (response.ok) {
             const data = await response.json();
             return data;
@@ -18,7 +22,7 @@ async function fetchTickets() {
 // وظيفة إنشاء بلاغ جديد مباشرة في قاعدة بيانات الموقع
 async function createTicket(ticketData) {
     try {
-        const response = await fetch("https://tickets-daem.vercel.app/api/create-ticket", {
+        const response = await fetch(await api("/api/create-ticket"), {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -40,7 +44,7 @@ async function createTicket(ticketData) {
 // الاستماع لطلبات المحتوى (content script)
 async function updateTicketDate(ticketNumber, date) {
     try {
-        const response = await fetch("https://tickets-daem.vercel.app/api/update-ticket", {
+        const response = await fetch(await api("/api/update-ticket"), {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -64,7 +68,7 @@ async function updateTicketDate(ticketNumber, date) {
 
 async function correctSpelling(text) {
     try {
-        const response = await fetch("https://tickets-daem.vercel.app/api/correct-spelling", {
+        const response = await fetch(await api("/api/correct-spelling"), {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -88,7 +92,7 @@ async function correctSpelling(text) {
 // جلب الموظفين في إجازة سارية ليتخطاهم التوزيع بالدور
 async function fetchLeaves() {
     try {
-        const response = await fetch("https://tickets-daem.vercel.app/api/leaves");
+        const response = await fetch(await api("/api/leaves"));
         if (response.ok) {
             const data = await response.json();
             return data && data.success ? (data.onLeave || []) : [];
@@ -128,7 +132,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 async function updateSolution(ticketNumber, solution) {
     try {
-        const response = await fetch("https://tickets-daem.vercel.app/api/update-ticket", {
+        const response = await fetch(await api("/api/update-ticket"), {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ number: ticketNumber, solution: solution })

@@ -30,14 +30,18 @@
         "*://daem.momra.gov.sa/*",
         "*://daem.momrauh.gov.sa/*"
       ],
-      "js": ["content.js"],
+      "js": [
+        "content.js"
+      ],
       "all_frames": true
     },
     {
       "matches": [
         "https://tickets-daem.vercel.app/*"
       ],
-      "js": ["vercel-inject.js"],
+      "js": [
+        "vercel-inject.js"
+      ],
       "all_frames": true
     }
   ],
@@ -45,5 +49,16 @@
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "optional_host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
   }
 }

@@ -266,10 +266,12 @@ function sendToIframe(action, data) {
 }
 
 // تحديث رابط الإطار ليشمل رقم الإصدار المخزن
-function updateIframeSrc() {
+async function updateIframeSrc() {
   try {
     const version = chrome.runtime.getManifest().version;
-    const targetSrc = "https://tickets-daem.vercel.app/whatsapp-popup?v=" + version;
+    // عنوان السيرفر يُقرأ من ملف الإعدادات المنفصل config.js (سحابي أو خارجي)
+    const server = await DaemConfig.getServerUrl();
+    const targetSrc = server + "/whatsapp-popup?v=" + version;
     if (iframe && iframe.src !== targetSrc && iframe.src !== targetSrc + "/") {
       iframe.src = targetSrc;
     }
@@ -278,5 +280,16 @@ function updateIframeSrc() {
   }
 }
 
+// فتح صفحة إعدادات السيرفر من داخل النافذة المنبثقة
+function bindSettingsButton() {
+  const btn = document.getElementById('open-settings');
+  if (btn) {
+    btn.addEventListener('click', () => chrome.runtime.openOptionsPage());
+  }
+}
+
 // تشغيل التحديث عند الجاهزية
-document.addEventListener('DOMContentLoaded', updateIframeSrc);
+document.addEventListener('DOMContentLoaded', () => {
+  bindSettingsButton();
+  updateIframeSrc();
+});
