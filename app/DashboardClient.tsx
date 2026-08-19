@@ -28,6 +28,17 @@ type Props = {
 
 const SYSTEM_UPDATES = [
   {
+    version: 'v8.4.0',
+    title: '🌐 إطلاق بوابة وحدة بلدي الموحدة للأنظمة والخدمات',
+    points: [
+      'تحويل الصفحة الرئيسية (/) إلى بوابة خدمات موحدة بهوية وتصميم منصة بلدي الرسمية',
+      'تخصيص بطاقات وصول سريعة للأنظمة (لوحة تحكم البلاغات، نظام عدستي، رخص البناء KPI-LIC)',
+      'نقل لوحة تحكم البلاغات بالكامل إلى المسار المخصص /baladyunit مع ربط الصلاحيات والتوجيه السلس',
+      'إتاحة إمكانية البحث والتصفية الفورية للخدمات المتاحة مع زر العودة المباشر للبوابة'
+    ],
+    date: '19-08-2026'
+  },
+  {
     version: 'v8.3.0',
     title: '🚀 ربط الموقع بقاعدة بيانات السيرفر المحلي وإطلاق وضع الأرشيف الكامل',
     points: [
@@ -2719,6 +2730,20 @@ export default function DashboardClient({ complaints: initialComplaints }: Props
 
         <div className={styles.mainActionsRow}>
           <div className={styles.iconsGroup}>
+            {/* زر العودة لبوابة الخدمات الموحدة */}
+            <button 
+              className={styles.navIconButton} 
+              onClick={() => router.push('/')} 
+              title="العودة لبوابة الخدمات الموحدة" 
+              style={{ backgroundColor: '#007A58', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s ease' }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="7" height="9"></rect>
+                <rect x="14" y="3" width="7" height="5"></rect>
+                <rect x="14" y="12" width="7" height="9"></rect>
+                <rect x="3" y="16" width="7" height="5"></rect>
+              </svg>
+            </button>
           {/* Existing icons ... */}
           {/* Google Docs Export Button */}
           { (userRole === 'super_admin' || (employeesList.find(e=>e.name===loggedInUser)?.permissions.sendReport)) && (

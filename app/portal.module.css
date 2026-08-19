@@ -1,0 +1,507 @@
+.portalContainer {
+  min-height: 100vh;
+  background-color: #f8fafc;
+  direction: rtl;
+  font-family: var(--font-cairo, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif);
+  color: #1e293b;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header Top bar */
+.topGovBar {
+  background-color: #ffffff;
+  border-bottom: 1px solid #edf2f7;
+  padding: 6px 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.govBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #007A58;
+  font-weight: 600;
+}
+
+.govBadge svg {
+  width: 14px;
+  height: 14px;
+}
+
+.topGovLinks {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.topGovLinks a, .topGovLinks span {
+  color: #64748b;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.topGovLinks a:hover {
+  color: #007A58;
+}
+
+/* Main Navigation Header */
+.mainHeader {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  padding: 0.85rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.headerContent {
+  max-width: 1380px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.brandGroup {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.logoWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.baladyLogoIcon {
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #007A58 0%, #009b6f 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 122, 88, 0.2);
+}
+
+.brandTexts {
+  display: flex;
+  flex-direction: column;
+}
+
+.brandTitle {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #007A58;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+}
+
+.brandSubtitle {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.navLink {
+  color: #334155;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.92rem;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.navLink:hover, .navLink.active {
+  color: #007A58;
+  background-color: #f0fdf4;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.userBadge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 30px;
+}
+
+.userAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #007A58;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.85rem;
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.userName {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.1;
+}
+
+.userRole {
+  font-size: 0.7rem;
+  color: #007A58;
+  font-weight: 600;
+}
+
+.actionBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.actionBtnPrimary {
+  background-color: #007A58;
+  color: #ffffff;
+}
+
+.actionBtnPrimary:hover {
+  background-color: #006246;
+}
+
+.actionBtnLogout {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fee2e2;
+}
+
+.actionBtnLogout:hover {
+  background-color: #fee2e2;
+}
+
+/* Hero Section */
+.heroSection {
+  background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+  padding: 2.5rem 2rem 2rem 2rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.heroContent {
+  max-width: 1380px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.heroHeading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.portalTitle {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 6px 0;
+}
+
+.portalDesc {
+  font-size: 0.95rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 8px 14px;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: border-color 0.2s;
+}
+
+.searchBox:focus-within {
+  border-color: #007A58;
+  box-shadow: 0 0 0 3px rgba(0, 122, 88, 0.12);
+}
+
+.searchBox input {
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 100%;
+  font-size: 0.9rem;
+  color: #1e293b;
+  font-family: inherit;
+}
+
+.searchBox svg {
+  color: #94a3b8;
+  margin-left: 8px;
+}
+
+/* Category Filter Tabs */
+.filterTabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.filterTab {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filterTab:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.filterTab.activeTab {
+  background: #007A58;
+  color: #ffffff;
+  border-color: #007A58;
+}
+
+/* Main Grid Section */
+.mainGridSection {
+  max-width: 1380px;
+  margin: 2rem auto;
+  padding: 0 2rem;
+  width: 100%;
+  flex: 1;
+}
+
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+
+@media (max-width: 1200px) {
+  .cardsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .cardsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .cardsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Individual Portal Card (Styled like Balady official portal) */
+.portalCard {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 190px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.25s ease-in-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.portalCard:hover {
+  transform: translateY(-4px);
+  border-color: #007A58;
+  box-shadow: 0 12px 24px -10px rgba(0, 122, 88, 0.18), 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.cardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.cardIconBox {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  background-color: #f0fdf4;
+  color: #007A58;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.portalCard:hover .cardIconBox {
+  background-color: #007A58;
+  color: #ffffff;
+  transform: scale(1.05);
+}
+
+.cardBadge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.cardBody {
+  margin-bottom: 1.25rem;
+  flex: 1;
+}
+
+.cardTitle {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 6px 0;
+  line-height: 1.35;
+}
+
+.cardDescription {
+  font-size: 0.82rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.45;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: auto;
+}
+
+.enterBtn {
+  background-color: #007A58;
+  color: #ffffff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 122, 88, 0.2);
+}
+
+.enterBtn:hover {
+  background-color: #006246;
+  box-shadow: 0 4px 8px rgba(0, 122, 88, 0.3);
+  transform: translateX(-2px);
+}
+
+.enterBtn svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.2s;
+}
+
+.enterBtn:hover svg {
+  transform: translateX(-3px);
+}
+
+/* Card Featured Highlight */
+.featuredCard {
+  border-right: 4px solid #007A58;
+}
+
+/* Footer */
+.portalFooter {
+  background-color: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  padding: 1.5rem 2rem;
+  margin-top: 3rem;
+}
+
+.footerContent {
+  max-width: 1380px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.footerRights {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.emptyState {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 4rem 2rem;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px dashed #cbd5e1;
+}
