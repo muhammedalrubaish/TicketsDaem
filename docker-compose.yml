@@ -37,7 +37,23 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./نسخ_احتياطية_وأرشيف/supabase_backup_2026-08-16/import_to_postgres.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./نسخ_احتياطية_وأرشيف/supabase_backup_latest/import_to_postgres.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - balady-network
+
+  # ===============================================
+  # 3. خدمة إرسال رسائل الواتساب المحلية (Baileys)
+  # ===============================================
+  whatsapp:
+    build:
+      context: ./whatsapp-service
+      dockerfile: Dockerfile
+    container_name: balady-whatsapp
+    restart: always
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./whatsapp-service/auth_info:/app/auth_info
     networks:
       - balady-network
 
