@@ -528,7 +528,7 @@ async function executeMasterAction() {
     selectEl.value = nextIdx;
   }
 
-  showToast(`تم النسخ والإرسال للواتساب وإسناد البلاغ لـ (${currentEmp.name}) 🚀`);
+  showToast(`تم النسخ وإسناد البلاغ والانتقال للواتساب! الصق النص (Ctrl+V) في القروب 🚀`);
 
   // 6. الضغط على حفظ وخروج تلقائياً
   setTimeout(() => {

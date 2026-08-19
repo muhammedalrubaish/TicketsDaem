@@ -3,7 +3,7 @@
 // ==========================================================================
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'OPEN_WHATSAPP' && request.url) {
+  if (request.action === 'OPEN_WHATSAPP') {
     chrome.tabs.query({}, (tabs) => {
       // البحث عن تبويب واتساب المفتوح بالفعل
       const targetTab = tabs.find(tab =>
@@ -15,17 +15,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       );
 
       if (targetTab) {
-        // التركيز على النافذة التي تحوي التبويب
+        // 1. التركيز على نافذة المتصفح التي تحتوي على واتساب
         if (targetTab.windowId) {
           chrome.windows.update(targetTab.windowId, { focused: true });
         }
-        // تحديث رابط التبويب نفسه بالرسالة الجديدة وتنشيطه
-        chrome.tabs.update(targetTab.id, { url: request.url, active: true }, () => {
+        // 2. الانتقال المباشر للتبويب دون إعادة تحميل الصفحة (Zero Reload)
+        chrome.tabs.update(targetTab.id, { active: true }, () => {
           sendResponse({ success: true, switched: true });
         });
       } else {
-        // إذا لم يكن مفتوحاً، نفتح تبويباً جديداً عادياً وليس نافذة منبثقة
-        chrome.tabs.create({ url: request.url, active: true }, () => {
+        // إذا لم يكن تبويب واتساب مفتوحاً مسبقاً، نفتحه في تبويب جديد
+        const openUrl = request.url || 'https://web.whatsapp.com';
+        chrome.tabs.create({ url: openUrl, active: true }, () => {
           sendResponse({ success: true, created: true });
         });
       }
