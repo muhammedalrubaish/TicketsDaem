@@ -1,4 +1,5 @@
-import { getLocalDb, supabase } from '../lib/supabase';
+import { getLocalDb } from '../lib/db';
+import { supabase } from '../lib/supabase';
 import DashboardClient from './DashboardClient';
 
 export const dynamic = 'force-dynamic';
