@@ -355,18 +355,18 @@ function showToast(msg, icon = '✅') {
 // --------------------------------------------------------------------------
 function buildWhatsAppMessage(ticketId, assigneeName, category, dateStr) {
   if (customTemplate && customTemplate.trim()) {
-    return customTemplate
-      .replace(/{ticket}|{رقم التذكرة}/g, ticketId)
-      .replace(/{assignee}|{المعين له}|{اسم المعين له}/g, assigneeName)
-      .replace(/{category}|{التصنيف}|{نوع التصنيف}/g, category)
-      .replace(/{date}|{التاريخ}|{تاريخ تحويل البلاغ}/g, dateStr);
+    // إذا كان القالب يحتوي على عناوين قديمة، نتجاهلها ونستخدم الأسطر النقية
+    if (!customTemplate.includes('رقم التذكرة:') && !customTemplate.includes('اسم المعين له:') && !customTemplate.includes('نوع التصنيف:')) {
+      return customTemplate
+        .replace(/{ticket}|{رقم التذكرة}/g, ticketId)
+        .replace(/{assignee}|{المعين له}|{اسم المعين له}/g, assigneeName)
+        .replace(/{category}|{التصنيف}|{نوع التصنيف}/g, category)
+        .replace(/{date}|{التاريخ}|{تاريخ تحويل البلاغ}/g, dateStr);
+    }
   }
 
-  // الصيغة المطلوبة بدقة: القيم مباشرة بدون عناوين أو رموز
-  return `${ticketId}
-${assigneeName}
-${category}
-${dateStr}`;
+  // الصيغة المطلوبة بدقة: 4 أسطر نقية بدون أي عناوين أو رموز
+  return `${ticketId}\n${assigneeName}\n${category}\n${dateStr}`;
 }
 
 function openWhatsAppWithMessage(messageText) {
@@ -482,7 +482,17 @@ function injectFloatingPanel() {
     if (typeof res.dwa_next_employee_index === 'number') {
       selectedEmployeeIndex = res.dwa_next_employee_index % employeesList.length;
     }
-    if (res.dwa_template) customTemplate = res.dwa_template;
+    if (res.dwa_template) {
+      if (res.dwa_template.includes('رقم التذكرة:') || res.dwa_template.includes('اسم المعين له:')) {
+        customTemplate = DEFAULT_TEMPLATE;
+        safeSetStorage({ dwa_template: DEFAULT_TEMPLATE });
+      } else {
+        customTemplate = res.dwa_template;
+      }
+    } else {
+      customTemplate = DEFAULT_TEMPLATE;
+      safeSetStorage({ dwa_template: DEFAULT_TEMPLATE });
+    }
     if (res.dwa_group_url) customWhatsAppGroupUrl = res.dwa_group_url;
 
     if (document.getElementById('daem-whatsapp-panel') || document.getElementById('daem-whatsapp-restore')) {

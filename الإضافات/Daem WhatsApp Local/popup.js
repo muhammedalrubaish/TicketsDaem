@@ -43,7 +43,12 @@ function loadSettings() {
   chrome.storage.local.get(['dwa_template', 'dwa_employees', 'dwa_group_url'], (res) => {
     // 1. القالب
     const templateInput = document.getElementById('template-input');
-    templateInput.value = res.dwa_template || DEFAULT_TEMPLATE;
+    if (res.dwa_template && !res.dwa_template.includes('رقم التذكرة:') && !res.dwa_template.includes('اسم المعين له:')) {
+      templateInput.value = res.dwa_template;
+    } else {
+      templateInput.value = DEFAULT_TEMPLATE;
+      chrome.storage.local.set({ dwa_template: DEFAULT_TEMPLATE });
+    }
 
     // 2. قائمة الموظفين
     if (res.dwa_employees && Array.isArray(res.dwa_employees) && res.dwa_employees.length > 0) {
