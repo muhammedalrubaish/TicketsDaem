@@ -28,6 +28,17 @@ type Props = {
 
 const SYSTEM_UPDATES = [
   {
+    version: 'v8.3.0',
+    title: '🚀 ربط الموقع بقاعدة بيانات السيرفر المحلي وإطلاق وضع الأرشيف الكامل',
+    points: [
+      'الربط المباشر بقاعدة بيانات PostgreSQL المحلية بالسيرفر واستيراد كافة البلاغات (4,985 بلاغ)',
+      'تخصيص العرض الافتراضي لبلاغات الدورة الحالية ابتداءً من تاريخ 04-04-2026',
+      'إتاحة خيار تصفح الأرشيف الكامل والبحث في جميع البلاغات التاريخية السابقة',
+      'فصل الاعتماد على أي خدمات سحابية خارجية لضمان العمل المستقل والسرعة الفائقة داخل شبكة العمل'
+    ],
+    date: '19-08-2026'
+  },
+  {
     version: 'v8.2.3',
     title: '🔔 تحديث إضافة واتساب بلدي (v1.4) ونظام التحقق التلقائي',
     points: [
@@ -977,6 +988,7 @@ export default function DashboardClient({ complaints: initialComplaints }: Props
   const [searchTerm, setSearchTerm] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [showArchive, setShowArchive] = useState(false); // false: الدورة الحالية من 04/04/2026 فقط، true: الأرشيف الكامل
   const [currentPage, setCurrentPage] = useState(1);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [formMode, setFormMode] = useState<'whatsapp' | 'notion'>('notion');
@@ -2222,16 +2234,16 @@ export default function DashboardClient({ complaints: initialComplaints }: Props
     }
   };
 
-  // تصفية البلاغات الأساسية لاستبعاد تحديثات النظام فقط (الإجازات تُحتسب كبلاغ)
+  // تصفية البلاغات الأساسية: افتراضياً من تاريخ 04/04/2026 إلا إذا تم تفعيل خيار الأرشيف الكامل
   const baseComplaints = useMemo(() => {
-    return complaints.filter(c => 
-      c.date && 
-      c.date >= '2026-04-04' &&
-      c.type !== 'تحديث نظام' && 
-      c.type !== 'تحديثات النظام' &&
-      !c.number.includes('📢')
-    );
-  }, [complaints]);
+    return complaints.filter(c => {
+      if (!c.date) return false;
+      if (!showArchive && c.date < '2026-04-04') return false;
+      if (c.type === 'تحديث نظام' || c.type === 'تحديثات النظام') return false;
+      if (c.number && c.number.includes('📢')) return false;
+      return true;
+    });
+  }, [complaints, showArchive]);
 
   const stats = useMemo(() => {
     const userFilteredComplaints = (selectedReceiver === 'all' 
@@ -2731,16 +2743,30 @@ export default function DashboardClient({ complaints: initialComplaints }: Props
 
             {/* زر إدارة الصلاحيات للمشرف العام محمد الربيش */}
             {(userRole === 'super_admin' || loggedInUser?.includes('محمد الربيش')) && (
-              <button 
-                className={styles.navIconButton} 
-                onClick={() => setIsPermissionsOpen(true)} 
-                title="مركز التحكم بالصلاحيات والموظفين" 
-                style={{ backgroundColor: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s ease' }}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                </svg>
-              </button>
+              <>
+                <button 
+                  className={styles.navIconButton} 
+                  onClick={() => router.push('/database')} 
+                  title="مستكشف قاعدة البيانات المحلية (PostgreSQL)" 
+                  style={{ backgroundColor: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s ease' }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                  </svg>
+                </button>
+                <button 
+                  className={styles.navIconButton} 
+                  onClick={() => router.push('/permissions')} 
+                  title="مركز التحكم بالصلاحيات والموظفين" 
+                  style={{ backgroundColor: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s ease' }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  </svg>
+                </button>
+              </>
             )}
 
             {/* زر صفحة المؤشرات للمشرفين */}
@@ -2749,9 +2775,9 @@ export default function DashboardClient({ complaints: initialComplaints }: Props
                 className={styles.navIconButton} 
                 onClick={() => router.push('/indicators')} 
                 title="صفحة المؤشرات والإحصائيات للعرض التلفزيوني" 
-                style={{ backgroundColor: 'var(--secondary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s ease' }}
+                style={{ backgroundColor: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s ease' }}
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="20" x2="18" y2="10"/>
                   <line x1="12" y1="20" x2="12" y2="4"/>
                   <line x1="6" y1="20" x2="6" y2="14"/>
@@ -2765,9 +2791,9 @@ export default function DashboardClient({ complaints: initialComplaints }: Props
                 className={styles.navIconButton} 
                 onClick={() => router.push('/municipalities')} 
                 title="مؤشرات البلديات الفرعية (الأكسل)" 
-                style={{ backgroundColor: '#217346', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s ease' }}
+                style={{ backgroundColor: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s ease' }}
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
                   <line x1="9" y1="9" x2="15" y2="9" />
                   <line x1="9" y1="13" x2="15" y2="13" />
@@ -2790,7 +2816,7 @@ export default function DashboardClient({ complaints: initialComplaints }: Props
               <img 
                 src="/daem-white.png" 
                 alt="شعار داعم" 
-                style={{ width: '28px', height: '28px', objectFit: 'contain' }} 
+                style={{ width: '24px', height: '24px', objectFit: 'contain' }} 
               />
             </a>
 
@@ -2804,7 +2830,7 @@ export default function DashboardClient({ complaints: initialComplaints }: Props
               title="التعاميم وتحديثات النظام" 
               style={{ backgroundColor: 'var(--primary)', color: 'white', position: 'relative' }}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                 <polyline points="14 2 14 8 20 8"></polyline>
                 <line x1="16" y1="13" x2="8" y2="13"></line>
@@ -2816,8 +2842,8 @@ export default function DashboardClient({ complaints: initialComplaints }: Props
               )}
             </button>
 
-            <button className={styles.navIconButton} onClick={() => setIsDriveOpen(true)} title="مركز النماذج والمرفقات" style={{ backgroundColor: 'var(--primary)' }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <button className={styles.navIconButton} onClick={() => router.push('/files')} title="مركز النماذج والمرفقات المحلية" style={{ backgroundColor: 'var(--primary)' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
               </svg>
             </button>
@@ -3238,6 +3264,22 @@ export default function DashboardClient({ complaints: initialComplaints }: Props
                   onClick={() => { setStartDate(''); setEndDate(''); setIsDateMenuOpen(false); }}
                   style={{padding:'6px', borderRadius:'6px', border:'1px solid var(--danger)', color:'var(--danger)', background:'transparent', cursor:'pointer', fontSize:'0.8rem'}}
                 >إلغاء الفلتر</button>
+              </div>
+
+              <div style={{marginBottom:'1rem', padding:'8px', borderRadius:'8px', background:'rgba(255,255,255,0.03)', border:'1px solid var(--border)'}}>
+                <label style={{display:'flex', alignItems:'center', justifyContent:'space-between', cursor:'pointer', fontSize:'0.82rem', fontWeight:'bold', color:'var(--foreground)'}}>
+                  <span>📦 الأرشيف الكامل (قبل 04/04)</span>
+                  <input 
+                    type="checkbox" 
+                    checked={showArchive} 
+                    onChange={(e) => {
+                      setShowArchive(e.target.checked);
+                      setNewTicketToast(e.target.checked ? '📦 تم تفعيل وضع الأرشيف الكامل' : '🟢 تم العودة لبلاغات الدورة الحالية (من 04/04/2026)');
+                      setTimeout(() => setNewTicketToast(null), 3000);
+                    }}
+                    style={{cursor:'pointer', width:'16px', height:'16px', accentColor:'var(--primary)'}}
+                  />
+                </label>
               </div>
 
               <div style={{display:'flex', flexDirection:'column', gap:'10px'}}>
