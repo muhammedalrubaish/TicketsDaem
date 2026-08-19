@@ -1,0 +1,339 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');
+
+/* ===================================================
+   داعم واتساب - تصميم الواجهة العائمة الفاخرة
+   =================================================== */
+
+#daem-whatsapp-panel {
+  position: fixed;
+  top: 100px;
+  right: 25px;
+  width: 320px;
+  background: rgba(15, 23, 42, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  border-radius: 18px;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.6), 0 0 25px rgba(16, 185, 129, 0.15);
+  z-index: 999999;
+  font-family: 'Cairo', sans-serif, system-ui;
+  direction: rtl;
+  color: #f8fafc;
+  user-select: none;
+  overflow: hidden;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+#daem-whatsapp-panel * {
+  box-sizing: border-box;
+  font-family: 'Cairo', sans-serif, system-ui;
+}
+
+#daem-whatsapp-panel:hover {
+  border-color: rgba(16, 185, 129, 0.6);
+  box-shadow: 0 25px 50px -10px rgba(0, 0, 0, 0.7), 0 0 35px rgba(16, 185, 129, 0.25);
+}
+
+/* الترويسة */
+.dwa-header {
+  padding: 12px 16px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(6, 78, 59, 0.4) 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: grab;
+}
+
+.dwa-header:active {
+  cursor: grabbing;
+}
+
+.dwa-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dwa-logo {
+  width: 26px;
+  height: 26px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+}
+
+.dwa-title {
+  font-weight: 800;
+  font-size: 13.5px;
+  color: #ffffff;
+  letter-spacing: -0.2px;
+}
+
+.dwa-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dwa-icon-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.dwa-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+/* المحتوى الداخلي */
+.dwa-body {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* بطاقة معاينة البيانات المستخرجة */
+.dwa-preview-card {
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dwa-preview-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+.dwa-label {
+  color: #94a3b8;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.dwa-val {
+  color: #38bdf8;
+  font-weight: 700;
+  max-width: 170px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  direction: ltr;
+  text-align: left;
+}
+
+.dwa-val-rtl {
+  color: #f1f5f9;
+  font-weight: 700;
+  max-width: 170px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  direction: rtl;
+  text-align: right;
+}
+
+.dwa-val-highlight {
+  color: #34d399;
+  font-weight: 800;
+}
+
+/* محدد الموظف المنسدل */
+.dwa-select-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dwa-select-title {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+}
+
+.dwa-select {
+  width: 100%;
+  background: #0f172a;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 8px;
+  padding: 6px 10px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dwa-select:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+}
+
+/* الأزرار الرئيسية */
+.dwa-btn-master {
+  width: 100%;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 13.5px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 8px 20px -4px rgba(16, 185, 129, 0.5);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.dwa-btn-master:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px -4px rgba(16, 185, 129, 0.7);
+  background: linear-gradient(135deg, #34d399 0%, #059669 100%);
+}
+
+.dwa-btn-master:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 10px -2px rgba(16, 185, 129, 0.4);
+}
+
+.dwa-btn-sub-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.dwa-btn-sub {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.dwa-btn-sub:hover {
+  background: rgba(51, 65, 85, 0.9);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.dwa-btn-sub:active {
+  transform: translateY(0);
+}
+
+.dwa-btn-save-exit {
+  background: rgba(14, 116, 144, 0.35);
+  border: 1px solid rgba(6, 182, 212, 0.4);
+  color: #67e8f9;
+}
+
+.dwa-btn-save-exit:hover {
+  background: rgba(14, 116, 144, 0.6);
+  color: #ffffff;
+  border-color: #22d3ee;
+}
+
+/* أيقونة استرجاع اللوحة بعد الإخفاء */
+#daem-whatsapp-restore {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 999998;
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.45);
+  font-size: 22px;
+  color: white;
+  user-select: none;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: dwa-pulse 2s infinite;
+}
+
+#daem-whatsapp-restore:hover {
+  transform: scale(1.12);
+}
+
+@keyframes dwa-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  70% { box-shadow: 0 0 0 14px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+/* الإشعارات العائمة التفاعلية */
+.daem-wa-toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(12px);
+  color: #ffffff;
+  padding: 12px 24px;
+  border-radius: 14px;
+  font-family: 'Cairo', sans-serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  border: 1px solid #10b981;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 20px rgba(16, 185, 129, 0.3);
+  z-index: 1000000;
+  direction: rtl;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.daem-wa-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}

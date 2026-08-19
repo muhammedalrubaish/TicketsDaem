@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "داعم واتساب - Daem WhatsApp Local",
+  "version": "1.1.0",
+  "description": "إضافة محلية لإسناد التذاكر وإرسال نموذج البلاغ لقروب الواتساب والحفظ والخروج بضغطة زر واحدة بدون قاعدة بيانات.",
+  "permissions": [
+    "storage",
+    "clipboardWrite",
+    "tabs"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://daem.momah.gov.sa/*",
+        "*://daem.momra.gov.sa/*",
+        "*://daem.momrauh.gov.sa/*",
+        "*://*.momah.gov.sa/*"
+      ],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "all_frames": true
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "إعدادات داعم واتساب",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  }
+}

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>إعدادات داعم واتساب</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- الترويسة -->
+    <header class="popup-header">
+      <div class="header-icon">💬</div>
+      <div class="header-title-wrap">
+        <h2>داعم واتساب بلس</h2>
+        <span class="version-badge">نسخة محلية 1.0</span>
+      </div>
+    </header>
+
+    <!-- تبويبات الإعدادات -->
+    <div class="tabs-nav">
+      <button class="tab-btn active" data-tab="tab-template">📝 قالب الرسالة</button>
+      <button class="tab-btn" data-tab="tab-employees">👥 قائمة الموظفين</button>
+      <button class="tab-btn" data-tab="tab-general">⚙️ عام</button>
+    </div>
+
+    <!-- محتوى تبويب قالب الرسالة -->
+    <div class="tab-content active" id="tab-template">
+      <div class="section-desc">يمكنك تخصيص شكل نموذج رسالة الواتساب أو استخدام المتغيرات التالية:</div>
+      <div class="tags-container">
+        <span class="tag-badge" data-insert="{رقم التذكرة}">+ {رقم التذكرة}</span>
+        <span class="tag-badge" data-insert="{اسم المعين له}">+ {اسم المعين له}</span>
+        <span class="tag-badge" data-insert="{نوع التصنيف}">+ {نوع التصنيف}</span>
+        <span class="tag-badge" data-insert="{تاريخ تحويل البلاغ}">+ {تاريخ تحويل البلاغ}</span>
+      </div>
+      <textarea id="template-input" class="dwa-textarea" rows="5" placeholder="أدخل نص النموذج هنا..."></textarea>
+      <button id="btn-reset-template" class="btn-secondary">استعادة القالب الافتراضي ↺</button>
+    </div>
+
+    <!-- محتوى تبويب قائمة الموظفين -->
+    <div class="tab-content" id="tab-employees">
+      <div class="section-desc">إدارة الموظفين للتوزيع الدوري المحلي (بدون قاعدة بيانات):</div>
+      <div class="employee-add-box">
+        <input type="text" id="new-emp-name" placeholder="اسم الموظف (مثال: محمد الربيش)">
+        <input type="text" id="new-emp-user" placeholder="يوزر النظام (مثال: mialrubaish)">
+        <button id="btn-add-emp" class="btn-primary">إضافة +</button>
+      </div>
+      <div class="employees-list" id="employees-list-container">
+        <!-- يتم ملء الموظفين بالجافاسكربت -->
+      </div>
+      <div class="employees-actions">
+        <button id="btn-reset-emp-index" class="btn-secondary">إعادة ضبط الدور للأول 🔄</button>
+        <button id="btn-restore-default-emp" class="btn-secondary">استعادة القائمة الافتراضية</button>
+      </div>
+    </div>
+
+    <!-- محتوى تبويب الإعدادات العامة -->
+    <div class="tab-content" id="tab-general">
+      <div class="form-group">
+        <label for="group-url-input">رابط قروب الواتساب أو رقم الدعم (اختياري):</label>
+        <input type="text" id="group-url-input" class="dwa-input" placeholder="https://chat.whatsapp.com/... أو رقم الهاتف">
+        <span class="field-hint">إذا تركته فارغاً سيتم فتح صفحة واتساب ويب باختيار القروب يدوياً.</span>
+      </div>
+    </div>
+
+    <!-- شريط الحفظ والتنبيه -->
+    <footer class="popup-footer">
+      <button id="btn-save-all" class="btn-save">حفظ الإعدادات 💾</button>
+      <div id="save-status" class="save-status"></div>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
