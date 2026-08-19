@@ -54,91 +54,175 @@ function safeSetStorage(data, callback) {
 }
 
 // --------------------------------------------------------------------------
-// Extraction Utilities
+// Extraction Utilities - Active & Visible Frame Targeting
 // --------------------------------------------------------------------------
-function queryAllInPage(selector) {
-  let results = [];
+function isElementVisible(el) {
+  if (!el) return false;
+  if (el.offsetWidth === 0 && el.offsetHeight === 0) return false;
+  const rect = el.getBoundingClientRect();
+  if (rect.width === 0 || rect.height === 0) return false;
+  
   try {
-    results = results.concat(Array.from(document.querySelectorAll(selector)));
-    const frames = document.querySelectorAll('iframe, frame');
-    for (const f of frames) {
-      try {
-        const doc = f.contentDocument || f.contentWindow?.document;
-        if (doc) {
-          results = results.concat(Array.from(doc.querySelectorAll(selector)));
-        }
-      } catch (e) { }
-    }
+    const style = window.getComputedStyle(el);
+    if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') return false;
   } catch (e) { }
+
+  let parent = el.parentElement;
+  while (parent && parent !== document.body && parent !== document.documentElement) {
+    try {
+      const pStyle = window.getComputedStyle(parent);
+      if (pStyle.display === 'none' || pStyle.visibility === 'hidden') return false;
+    } catch (e) { }
+    parent = parent.parentElement;
+  }
+  return true;
+}
+
+function getVisibleDocuments() {
+  const docs = [document];
+  function recurseFrames(doc) {
+    if (!doc) return;
+    try {
+      const frames = doc.querySelectorAll('iframe, frame');
+      for (const f of frames) {
+        try {
+          if (f.offsetWidth > 0 && f.offsetHeight > 0) {
+            const style = window.getComputedStyle(f);
+            if (style.display !== 'none' && style.visibility !== 'hidden') {
+              const frameDoc = f.contentDocument || f.contentWindow?.document;
+              if (frameDoc) {
+                docs.push(frameDoc);
+                recurseFrames(frameDoc);
+              }
+            }
+          }
+        } catch (e) { }
+      }
+    } catch (e) { }
+  }
+  recurseFrames(document);
+  return docs;
+}
+
+function queryVisibleInPage(selector) {
+  let results = [];
+  const docs = getVisibleDocuments();
+  for (const doc of docs) {
+    try {
+      const elements = Array.from(doc.querySelectorAll(selector));
+      for (const el of elements) {
+        if (isElementVisible(el)) {
+          results.push(el);
+        }
+      }
+    } catch (e) { }
+  }
   return results;
 }
 
 function getTicketNumber() {
-  const titleMatch = document.title ? document.title.match(/IM\d{5,12}/) : null;
-  if (titleMatch) return titleMatch[0];
+  const docs = getVisibleDocuments();
 
-  const pageInputs = queryAllInPage('input');
-  for (const input of pageInputs) {
+  // 1. الأولوية الأولى: التبويب النشط في شريط التبويبات العلوي (Active Tab Strip)
+  for (const doc of docs) {
+    const activeTabs = doc.querySelectorAll('.x-tab-strip-active, [class*="tab-strip-active"], [class*="tab-active"], [aria-selected="true"]');
+    for (const tab of activeTabs) {
+      const txt = (tab.innerText || tab.textContent || '').trim();
+      const m = txt.match(/IM\d{5,12}/);
+      if (m) return m[0];
+    }
+  }
+
+  // 2. الأولوية الثانية: ترويسة البلاغ النشط بالصفحة (مثل "الحدث : IM4692578" أو "الحدث - IM...")
+  for (const doc of docs) {
+    const headers = doc.querySelectorAll('h1, h2, h3, div, span, td');
+    for (const h of headers) {
+      if (isElementVisible(h)) {
+        const txt = (h.innerText || '').trim();
+        if (txt.length < 50 && (txt.includes('الحدث') || txt.includes('Incident') || txt.includes('البلاغ'))) {
+          const m = txt.match(/IM\d{5,12}/);
+          if (m) return m[0];
+        }
+      }
+    }
+  }
+
+  // 3. الأولوية الثالثة: حقول الإدخال المرئية فقط
+  const visibleInputs = queryVisibleInPage('input');
+  for (const input of visibleInputs) {
     const val = (input.value || '').trim();
     if (/^IM\d{5,12}$/.test(val)) return val;
   }
 
-  // Fallback: search text in headers or tabs
-  const textMatches = (document.body ? document.body.innerText : '').match(/IM\d{5,12}/);
-  if (textMatches) return textMatches[0];
+  // 4. أرقام التذاكر في عنوان التبويب
+  const titleMatch = document.title ? document.title.match(/IM\d{5,12}/) : null;
+  if (titleMatch) return titleMatch[0];
+
+  // 5. مسح عام للنصوص المرئية فقط
+  for (const doc of docs) {
+    const bodyText = doc.body ? doc.body.innerText : '';
+    const matches = bodyText.match(/IM\d{5,12}/);
+    if (matches) return matches[0];
+  }
 
   return '';
 }
 
 function findAssigneeInput() {
-  const allDocs = [document];
-  const frames = document.querySelectorAll('iframe, frame');
-  for (const f of frames) {
-    try {
-      const doc = f.contentDocument || f.contentWindow?.document;
-      if (doc) allDocs.push(doc);
-    } catch (e) { }
+  const visibleInputs = queryVisibleInPage('input, textarea');
+  
+  // 1. Direct HPSM / Daem instance attribute
+  for (const input of visibleInputs) {
+    const name = (input.name || '').toLowerCase();
+    const dvdvar = typeof input.getAttribute === 'function' ? (input.getAttribute('dvdvar') || '').toLowerCase() : '';
+    if (name === 'instance/assignee.name' || dvdvar === 'instance/assignee.name' || name.includes('assignee.name')) {
+      return input;
+    }
   }
 
-  for (const doc of allDocs) {
-    // 1. Direct HPSM / Daem instance attribute
-    const hpsm = doc.querySelector('input[name="instance/assignee.name"], textarea[name="instance/assignee.name"], [dvdvar="instance/assignee.name"], input[name*="assignee.name"]');
-    if (hpsm) return hpsm;
+  // 2. Remedy field ID 1000000322
+  for (const input of visibleInputs) {
+    const id = (input.id || '').toLowerCase();
+    const name = (input.name || '').toLowerCase();
+    if (id.includes('1000000322') || name.includes('1000000322')) {
+      return input;
+    }
+  }
 
-    // 2. Remedy field ID 1000000322
-    const remedy = doc.querySelector('input[id*="1000000322"], [id*="1000000322"] input');
-    if (remedy) return remedy;
+  // 3. Search via visible labels
+  const visibleLabels = queryVisibleInPage('label, span, td, div');
+  for (const label of visibleLabels) {
+    const txt = (label.innerText || '').trim().replace(/[\u064B-\u065F]/g, "").toLowerCase();
+    if (txt.includes('group') || txt.includes('مجموع')) continue;
 
-    // 3. Search via labels
-    const labels = Array.from(doc.querySelectorAll('label, span, td, div'));
-    for (const label of labels) {
-      if (label.offsetWidth === 0 && label.offsetHeight === 0) continue;
-      const txt = (label.innerText || '').trim().replace(/[\u064B-\u065F]/g, "").toLowerCase();
-      if (txt.includes('group') || txt.includes('مجموع')) continue;
+    if (txt === 'المعين له' || txt === 'المعين له:' || txt === 'معين له' || txt === 'معين له:' || txt === 'المستقبل' || txt === 'assignee') {
+      if (label.htmlFor) {
+        const inp = document.getElementById(label.htmlFor);
+        if (inp && isElementVisible(inp)) return inp;
+      }
+      const container = label.closest('td, div');
+      if (container) {
+        const directInp = container.querySelector('input, textarea');
+        if (directInp && isElementVisible(directInp)) return directInp;
 
-      if (txt === 'المعين له' || txt === 'المعين له:' || txt === 'معين له' || txt === 'معين له:' || txt === 'المستقبل' || txt === 'assignee') {
-        if (label.htmlFor) {
-          const inp = doc.getElementById(label.htmlFor);
-          if (inp) return inp;
-        }
-        const container = label.closest('td, div');
-        if (container) {
-          const directInp = container.querySelector('input, textarea');
-          if (directInp) return directInp;
-
-          let sib = container.nextElementSibling;
-          while (sib) {
-            const inp = sib.querySelector('input, textarea') || (['INPUT', 'TEXTAREA'].includes(sib.tagName) ? sib : null);
-            if (inp) return inp;
-            sib = sib.nextElementSibling;
-          }
+        let sib = container.nextElementSibling;
+        while (sib) {
+          const inp = sib.querySelector('input, textarea') || (['INPUT', 'TEXTAREA'].includes(sib.tagName) ? sib : null);
+          if (inp && isElementVisible(inp)) return inp;
+          sib = sib.nextElementSibling;
         }
       }
     }
+  }
 
-    // 4. General input query fallback
-    const general = doc.querySelector('input[id*="assignee"]:not([id*="group"]), input[name*="assignee"]:not([name*="group"])');
-    if (general) return general;
+  // 4. General input query fallback
+  for (const input of visibleInputs) {
+    const id = (input.id || '').toLowerCase();
+    const name = (input.name || '').toLowerCase();
+    if ((id.includes('assignee') || name.includes('assignee') || id.includes('receiver') || name.includes('receiver')) &&
+        !id.includes('group') && !name.includes('group')) {
+      return input;
+    }
   }
 
   return null;
@@ -192,8 +276,8 @@ function normalizeCategory(rawCategory) {
 }
 
 function getClassification() {
-  const cells = queryAllInPage('td, label, span');
-  for (const cell of cells) {
+  const visibleCells = queryVisibleInPage('td, label, span');
+  for (const cell of visibleCells) {
     const txt = (cell.innerText || '').trim();
     if (txt === 'التصنيف:' || txt === 'التصنيف' || txt === 'Category:' || txt === 'Category') {
       let cellTd = cell.closest('td');
@@ -207,8 +291,8 @@ function getClassification() {
     }
   }
 
-  const inputs = queryAllInPage('input[type="text"]');
-  for (const input of inputs) {
+  const visibleInputs = queryVisibleInPage('input[type="text"]');
+  for (const input of visibleInputs) {
     const name = (input.name || '').toLowerCase();
     const id = (input.id || '').toLowerCase();
     if ((name.includes('subcategory') || id.includes('subcategory') || name.includes('product') || id.includes('product')) &&
@@ -217,7 +301,7 @@ function getClassification() {
     }
   }
 
-  for (const input of inputs) {
+  for (const input of visibleInputs) {
     const name = (input.name || '').toLowerCase();
     const id = (input.id || '').toLowerCase();
     if ((name.includes('category') || id.includes('category')) && !name.includes('group') && !id.includes('group') && !name.includes('type')) {
@@ -265,7 +349,7 @@ function triggerElementChangeEvents(element, value) {
 // Save and Exit Automation
 // --------------------------------------------------------------------------
 function getElementScore(el) {
-  if (!el || el.offsetParent === null) return -1;
+  if (!el || !isElementVisible(el)) return -1;
   const label = typeof el.getAttribute === 'function' ? (el.getAttribute('aria-label') || '') : '';
   const shortcuts = typeof el.getAttribute === 'function' ? (el.getAttribute('aria-keyshortcuts') || '') : '';
   const txt = (el.innerText || el.value || el.alt || el.title || label || '').trim();
@@ -309,7 +393,7 @@ function getElementScore(el) {
 }
 
 function globalClickSaveAndExit() {
-  const elements = queryAllInPage('button, input[type="button"], span, a, td, div');
+  const elements = queryVisibleInPage('button, input[type="button"], span, a, td, div');
   let bestElement = null;
   let highestScore = -1;
 
@@ -355,7 +439,6 @@ function showToast(msg, icon = '✅') {
 // --------------------------------------------------------------------------
 function buildWhatsAppMessage(ticketId, assigneeName, category, dateStr) {
   if (customTemplate && customTemplate.trim()) {
-    // إذا كان القالب يحتوي على عناوين قديمة، نتجاهلها ونستخدم الأسطر النقية
     if (!customTemplate.includes('رقم التذكرة:') && !customTemplate.includes('اسم المعين له:') && !customTemplate.includes('نوع التصنيف:')) {
       return customTemplate
         .replace(/{ticket}|{رقم التذكرة}/g, ticketId)
@@ -387,7 +470,6 @@ function openWhatsAppWithMessage(messageText) {
     if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
       chrome.runtime.sendMessage({ action: 'OPEN_WHATSAPP', url: waUrl }, (res) => {
         if (chrome.runtime.lastError) {
-          // Fallback if background not ready
           window.open(waUrl, '_blank');
         }
       });
@@ -395,7 +477,6 @@ function openWhatsAppWithMessage(messageText) {
     }
   } catch (e) { }
 
-  // حل احتياطي في حال عدم استجابة الخلفية
   window.open(waUrl, '_blank');
 }
 
@@ -461,10 +542,9 @@ async function executeMasterAction() {
 }
 
 // --------------------------------------------------------------------------
-// UI Panel Injection (Top Window Only to prevent duplicate panels)
+// UI Panel Injection (Top Window Only)
 // --------------------------------------------------------------------------
 function injectFloatingPanel() {
-  // منع الحقن في الإطارات الفرعية (Iframes) حتى لا تظهر اللوحة مرتين
   if (window !== window.top) {
     return;
   }
@@ -474,7 +554,6 @@ function injectFloatingPanel() {
     return;
   }
 
-  // تحميل الإعدادات من التخزين المحلي
   safeGetStorage(['dwa_employees', 'dwa_next_employee_index', 'dwa_template', 'dwa_group_url', 'dwa_panel_pos'], (res) => {
     if (res.dwa_employees && Array.isArray(res.dwa_employees) && res.dwa_employees.length > 0) {
       employeesList = res.dwa_employees;
@@ -521,7 +600,7 @@ function injectFloatingPanel() {
       </div>
 
       <div class="dwa-body" id="dwa-body-content">
-        <!-- بطاقة المعاينة المنسقة للواتساب -->
+        <!-- بطاقة المعاينة اللحظية الحية -->
         <div class="dwa-preview-card">
           <div class="dwa-preview-row">
             <span class="dwa-label">🎫 رقم التذكرة:</span>
@@ -572,7 +651,6 @@ function injectFloatingPanel() {
       </div>
     `;
 
-    // تعيين الموضع المحفوظ
     if (res.dwa_panel_pos) {
       panel.style.top = Math.max(10, Math.min(res.dwa_panel_pos.y, window.innerHeight - 300)) + 'px';
       panel.style.left = Math.max(10, Math.min(res.dwa_panel_pos.x, window.innerWidth - 340)) + 'px';
@@ -581,7 +659,6 @@ function injectFloatingPanel() {
 
     document.body.appendChild(panel);
 
-    // ربط الأحداث
     setupPanelEvents(panel);
     updatePanelPreview();
   });
@@ -594,10 +671,15 @@ function updatePanelPreview() {
 
   if (ticketEl) {
     const tId = getTicketNumber();
-    ticketEl.innerText = tId || 'غير محدد';
+    if (tId) {
+      ticketEl.innerText = tId;
+    }
   }
   if (catEl) {
-    catEl.innerText = getClassification();
+    const cat = getClassification();
+    if (cat) {
+      catEl.innerText = cat;
+    }
   }
   if (dateEl) {
     dateEl.innerText = getTodayFormattedDate();
@@ -615,10 +697,8 @@ function setupPanelEvents(panel) {
   const exitOnlyBtn = document.getElementById('dwa-btn-exit-only');
   const selectEl = document.getElementById('dwa-employee-select');
 
-  // 1. الزر الشامل بضغطة زر
   masterBtn.addEventListener('click', executeMasterAction);
 
-  // 2. نسخ النموذج فقط
   copyOnlyBtn.addEventListener('click', async () => {
     const ticketId = getTicketNumber() || 'IM...';
     const empIdx = selectEl ? parseInt(selectEl.value, 10) : 0;
@@ -635,7 +715,6 @@ function setupPanelEvents(panel) {
     }
   });
 
-  // 3. فتح واتساب فقط
   waOnlyBtn.addEventListener('click', () => {
     const ticketId = getTicketNumber() || 'IM...';
     const empIdx = selectEl ? parseInt(selectEl.value, 10) : 0;
@@ -647,7 +726,6 @@ function setupPanelEvents(panel) {
     showToast('جاري فتح واتساب ويب... 💬');
   });
 
-  // 4. حفظ وخروج فقط
   exitOnlyBtn.addEventListener('click', () => {
     const clicked = globalClickSaveAndExit();
     if (clicked) {
@@ -657,7 +735,6 @@ function setupPanelEvents(panel) {
     }
   });
 
-  // 5. تصغير / تكبير
   let isCollapsed = false;
   toggleBtn.addEventListener('click', () => {
     isCollapsed = !isCollapsed;
@@ -672,7 +749,6 @@ function setupPanelEvents(panel) {
     }
   });
 
-  // 6. إخفاء وإظهار الأيقونة العائمة
   closeBtn.addEventListener('click', () => {
     panel.style.display = 'none';
     const restoreBtn = document.createElement('div');
@@ -686,7 +762,6 @@ function setupPanelEvents(panel) {
     document.body.appendChild(restoreBtn);
   });
 
-  // 7. سحب وتحريك اللوحة (Drag & Drop)
   let isDragging = false;
   let startX, startY, initialLeft, initialTop;
 
@@ -726,12 +801,20 @@ function setupPanelEvents(panel) {
 }
 
 // --------------------------------------------------------------------------
-// Start Watching & Periodic Check (Only in Top Frame)
+// Start Watching & Periodic Check
 // --------------------------------------------------------------------------
 if (window === window.top) {
-  setTimeout(injectFloatingPanel, 1000);
-  setInterval(injectFloatingPanel, 2500);
-  setInterval(updatePanelPreview, 2000);
+  setTimeout(injectFloatingPanel, 600);
+  setInterval(injectFloatingPanel, 2000);
+  // تحديث سريع للمعاينة اللحظية كل 500 مللي ثانية
+  setInterval(updatePanelPreview, 500);
+
+  // تحديث فوري عند نقر المستخدم على أي تبويب بالصفحة
+  document.addEventListener('click', () => {
+    setTimeout(updatePanelPreview, 150);
+    setTimeout(updatePanelPreview, 500);
+    setTimeout(updatePanelPreview, 1200);
+  });
 }
 
 // مراقبة تحديثات الإعدادات من popup
